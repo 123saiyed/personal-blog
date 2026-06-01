@@ -61,7 +61,11 @@
     <main class="admin-main">
 
       <header class="admin-topbar">
-        <h2 id="page-title">Dashboard</h2>
+        <div style="display:flex;align-items:center;gap:12px">
+          <button id="admin-menu-btn" class="admin-mobile-menu-btn" aria-label="Open menu"
+                  style="display:none;background:none;border:none;font-size:1.4rem;color:var(--text);padding:4px 8px;cursor:pointer;">&#9776;</button>
+          <h2 id="page-title">Dashboard</h2>
+        </div>
         <span class="admin-user" id="admin-user-email"></span>
       </header>
 
@@ -195,6 +199,9 @@
     </div>
   </div>
   <div class="modal-overlay hidden" id="profile-modal-overlay"></div>
+
+  <!-- Mobile sidebar overlay -->
+  <div class="admin-sidebar-overlay" id="sidebar-overlay"></div>
 
   <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>

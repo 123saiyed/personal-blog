@@ -96,9 +96,28 @@ function showApp(user) {
 
   $('#logout-btn')?.addEventListener('click', () => getAuth().signOut());
 
+  bindMobileSidebar();
+
   const path = location.pathname.split('/').pop();
   if (path === 'add-post.html') initPostEditor();
   else                          initDashboard();
+}
+
+function bindMobileSidebar() {
+  const sidebar  = $('.admin-sidebar');
+  const overlay  = $('#sidebar-overlay');
+  const menuBtn  = $('#admin-menu-btn');
+
+  const open  = () => { sidebar?.classList.add('open'); overlay?.classList.add('open'); };
+  const close = () => { sidebar?.classList.remove('open'); overlay?.classList.remove('open'); };
+
+  menuBtn?.addEventListener('click', open);
+  overlay?.addEventListener('click', close);
+
+  // Close sidebar when a nav link is clicked on mobile
+  $$('.sidebar-link').forEach(link => link.addEventListener('click', () => {
+    if (window.innerWidth <= 768) close();
+  }));
 }
 
 /* ============================================================
