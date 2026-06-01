@@ -10,7 +10,7 @@
 </head>
 <body class="admin-body">
 
-  <!-- ===== LOGIN SCREEN ===== -->
+  <!-- LOGIN SCREEN -->
   <div class="login-screen" id="login-screen">
     <div class="login-card">
       <h1 class="login-logo">Ajamali Saiyad</h1>
@@ -33,7 +33,7 @@
     </div>
   </div>
 
-  <!-- ===== ADMIN LAYOUT ===== -->
+  <!-- ADMIN LAYOUT -->
   <div class="admin-layout hidden" id="admin-app">
 
     <aside class="admin-sidebar">
@@ -42,14 +42,11 @@
         <a href="dashboard.html" class="sidebar-link active">
           <span class="sidebar-icon">&#9783;</span> Dashboard
         </a>
-        <a href="add-post.html" class="sidebar-link">
-          <span class="sidebar-icon">&#9998;</span> New Post
-        </a>
-        <a href="dashboard.html#posts" class="sidebar-link" id="nav-posts">
-          <span class="sidebar-icon">&#128196;</span> All Posts
-        </a>
-        <a href="dashboard.html#certs" class="sidebar-link" id="nav-certs">
+        <a href="dashboard.html#certs" class="sidebar-link">
           <span class="sidebar-icon">&#127942;</span> Certificates
+        </a>
+        <a href="dashboard.html#home-settings" class="sidebar-link">
+          <span class="sidebar-icon">&#9998;</span> Home Page
         </a>
       </nav>
       <div class="sidebar-footer">
@@ -69,46 +66,23 @@
         <span class="admin-user" id="admin-user-email"></span>
       </header>
 
-      <div class="stats-row" id="stats-row">
-        <div class="stat-card">
-          <div class="stat-num" id="stat-posts">—</div>
-          <div class="stat-label">Published Posts</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-num" id="stat-drafts">—</div>
-          <div class="stat-label">Drafts</div>
-        </div>
+      <!-- Stats -->
+      <div class="stats-row">
         <div class="stat-card">
           <div class="stat-num" id="stat-certs">—</div>
           <div class="stat-label">Certificates</div>
         </div>
+        <div class="stat-card">
+          <div class="stat-num" id="stat-skills">—</div>
+          <div class="stat-label">Skills Listed</div>
+        </div>
       </div>
 
+      <!-- Quick actions -->
       <div class="quick-actions">
-        <a href="add-post.html" class="btn-primary">+ New Post</a>
-        <button class="btn-secondary" id="add-cert-btn">+ Add Certificate</button>
+        <button class="btn-primary" id="add-cert-btn">+ Add Certificate</button>
         <button class="btn-secondary" id="edit-profile-btn">&#9998; Edit Profile Photo</button>
       </div>
-
-      <!-- Posts Table -->
-      <section class="admin-section" id="posts">
-        <div class="admin-section-header">
-          <h3>Blog Posts</h3>
-          <a href="add-post.html" class="link-more">+ New Post</a>
-        </div>
-        <div class="table-wrap">
-          <table class="admin-table">
-            <thead>
-              <tr>
-                <th>Title</th><th>Category</th><th>Date</th><th>Status</th><th>Actions</th>
-              </tr>
-            </thead>
-            <tbody id="posts-tbody">
-              <tr><td colspan="5" class="table-loading">Loading posts...</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </section>
 
       <!-- Certificates Table -->
       <section class="admin-section" id="certs">
@@ -119,9 +93,7 @@
         <div class="table-wrap">
           <table class="admin-table">
             <thead>
-              <tr>
-                <th>Title</th><th>Date</th><th>Image URL</th><th>Actions</th>
-              </tr>
+              <tr><th>Title</th><th>Date</th><th>Image</th><th>Actions</th></tr>
             </thead>
             <tbody id="certs-tbody">
               <tr><td colspan="4" class="table-loading">Loading certificates...</td></tr>
@@ -130,6 +102,134 @@
         </div>
       </section>
 
+      <!-- Home Page Settings -->
+      <section class="admin-section" id="home-settings">
+        <div class="admin-section-header">
+          <h3>&#127968; Home Page Settings</h3>
+          <button class="btn-primary" id="save-home-btn">
+            <span id="save-home-text">Save Changes</span>
+            <span class="spinner hidden" id="save-home-spinner"></span>
+          </button>
+        </div>
+
+        <div class="settings-panel">
+
+          <!-- Profile Info -->
+          <div class="settings-group">
+            <div class="settings-group-title">Profile Info</div>
+            <div class="settings-grid-2">
+              <div class="form-group">
+                <label for="hs-badge">Status Badge</label>
+                <input type="text" id="hs-badge" placeholder="Open to Opportunities" maxlength="60" />
+                <small>Small label above your name on home page</small>
+              </div>
+              <div class="form-group">
+                <label for="hs-jobtitle">Job Title</label>
+                <input type="text" id="hs-jobtitle" placeholder="Assistant Professor at LJ University" />
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="hs-bio">Bio / About Text</label>
+              <textarea id="hs-bio" rows="4" placeholder="Write a short professional bio..."></textarea>
+            </div>
+          </div>
+
+          <!-- Resume -->
+          <div class="settings-group">
+            <div class="settings-group-title">Resume / CV</div>
+            <div class="form-group">
+              <label for="hs-resume">Resume Link (Google Drive)</label>
+              <input type="url" id="hs-resume" placeholder="https://drive.google.com/file/d/..." />
+              <small>Upload PDF to Google Drive → Share → Anyone with link → Copy link → Paste here. A <strong>Download CV</strong> button will appear on your home page.</small>
+            </div>
+          </div>
+
+          <!-- Skills -->
+          <div class="settings-group">
+            <div class="settings-group-title">Skills &amp; Expertise</div>
+            <div class="form-group">
+              <label for="hs-skills">Skills <span style="font-weight:400;color:var(--text-muted)">(comma separated)</span></label>
+              <input type="text" id="hs-skills" placeholder="Teaching, Research, Python, Machine Learning, Data Science" />
+              <small>These appear as tags on your home page for HR to scan quickly.</small>
+            </div>
+          </div>
+
+          <!-- Contact -->
+          <div class="settings-group">
+            <div class="settings-group-title">Contact Info</div>
+            <div class="settings-grid-2">
+              <div class="form-group">
+                <label for="hs-email">Email Address</label>
+                <input type="email" id="hs-email" placeholder="your@email.com" />
+              </div>
+              <div class="form-group">
+                <label for="hs-linkedin">LinkedIn Profile URL</label>
+                <input type="url" id="hs-linkedin" placeholder="https://linkedin.com/in/yourprofile" />
+              </div>
+            </div>
+          </div>
+
+          <!-- About Cards -->
+          <div class="settings-group">
+            <div class="settings-group-title">About Cards (3 cards on home page)</div>
+
+            <div class="settings-card-group">
+              <div class="settings-group-title" style="font-size:.78rem;margin-bottom:12px">Card 1</div>
+              <div class="settings-grid-2">
+                <div class="form-group">
+                  <label for="hs-about1-icon">Icon (emoji)</label>
+                  <input type="text" id="hs-about1-icon" placeholder="🎓" maxlength="4" />
+                </div>
+                <div class="form-group">
+                  <label for="hs-about1-title">Title</label>
+                  <input type="text" id="hs-about1-title" placeholder="What I Do" />
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="hs-about1-text">Text</label>
+                <textarea id="hs-about1-text" rows="2" placeholder="Describe what you do..."></textarea>
+              </div>
+            </div>
+
+            <div class="settings-card-group">
+              <div class="settings-group-title" style="font-size:.78rem;margin-bottom:12px">Card 2</div>
+              <div class="settings-grid-2">
+                <div class="form-group">
+                  <label for="hs-about2-icon">Icon (emoji)</label>
+                  <input type="text" id="hs-about2-icon" placeholder="🎯" maxlength="4" />
+                </div>
+                <div class="form-group">
+                  <label for="hs-about2-title">Title</label>
+                  <input type="text" id="hs-about2-title" placeholder="What I'm Looking For" />
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="hs-about2-text">Text</label>
+                <textarea id="hs-about2-text" rows="2" placeholder="What opportunities are you seeking..."></textarea>
+              </div>
+            </div>
+
+            <div class="settings-card-group">
+              <div class="settings-group-title" style="font-size:.78rem;margin-bottom:12px">Card 3</div>
+              <div class="settings-grid-2">
+                <div class="form-group">
+                  <label for="hs-about3-icon">Icon (emoji)</label>
+                  <input type="text" id="hs-about3-icon" placeholder="🌍" maxlength="4" />
+                </div>
+                <div class="form-group">
+                  <label for="hs-about3-title">Title</label>
+                  <input type="text" id="hs-about3-title" placeholder="Location &amp; Availability" />
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="hs-about3-text">Text</label>
+                <textarea id="hs-about3-text" rows="2" placeholder="Where you're based, availability..."></textarea>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </section>
 
     </main>
   </div>
@@ -151,7 +251,7 @@
           <label for="cert-file-input">Certificate Image <span class="required">*</span></label>
           <input type="file" id="cert-file-input" accept="image/*"
                  style="display:block;width:100%;padding:8px;border:2px dashed var(--blue);border-radius:8px;cursor:pointer;background:#f0f7ff;font-size:.9rem;" />
-          <small>Select a JPG or PNG of your certificate from your computer. Max recommended: 4 MB.</small>
+          <small>Select a JPG or PNG of your certificate. Max 4 MB.</small>
           <p id="cert-file-error" style="color:#dc2626;font-size:.85rem;display:none;margin-top:4px"></p>
         </div>
         <div id="cert-img-preview-wrap" style="display:none;text-align:center;margin-bottom:8px">
@@ -164,7 +264,7 @@
         </div>
         <div class="form-group">
           <label for="cert-description">Description</label>
-          <textarea id="cert-description" rows="3" placeholder="Brief description of this certificate..."></textarea>
+          <textarea id="cert-description" rows="3" placeholder="Brief description..."></textarea>
         </div>
         <div class="modal-actions">
           <button type="button" class="btn-secondary" id="cert-cancel-btn">Cancel</button>
@@ -189,7 +289,7 @@
         <label for="profile-file-input">Choose Photo from your Computer</label>
         <input type="file" id="profile-file-input" accept="image/*"
                style="display:block;width:100%;padding:8px;border:2px dashed var(--blue);border-radius:8px;cursor:pointer;background:#f0f7ff;font-size:.9rem;" />
-        <small>Select a JPG, PNG, or WEBP photo from your device. Max recommended size: 2 MB.</small>
+        <small>Select a JPG, PNG, or WEBP photo. Max 2 MB.</small>
       </div>
       <p id="profile-file-error" style="color:#dc2626;font-size:.85rem;display:none;margin-top:4px"></p>
       <div class="modal-actions">
@@ -199,6 +299,9 @@
     </div>
   </div>
   <div class="modal-overlay hidden" id="profile-modal-overlay"></div>
+
+  <!-- Toast -->
+  <div class="toast hidden" id="save-toast"></div>
 
   <!-- Mobile sidebar overlay -->
   <div class="admin-sidebar-overlay" id="sidebar-overlay"></div>

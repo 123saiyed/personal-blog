@@ -18,39 +18,16 @@ function formatMonth(str) {
 
 function getDB() { return firebase.database(); }
 
-// Sanitize any text before injecting into HTML — prevents XSS
 function safe(str) {
   if (!str) return '';
   return String(str)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;').replace(/"/g, '&quot;')
     .replace(/'/g, '&#x27;');
 }
 
-/* ---------- card builders ---------- */
-function createPostCard(post, id) {
-  const card = document.createElement('article');
-  card.className = 'post-card';
-  card.dataset.id       = id;
-  card.dataset.category = post.category || 'update';
-  card.dataset.title    = (post.title || '').toLowerCase();
-  card.innerHTML = `
-    <span class="post-category">${safe(post.category) || 'Update'}</span>
-    <h3 class="post-title">${safe(post.title) || 'Untitled'}</h3>
-    <p class="post-excerpt">${safe(post.excerpt)}</p>
-    <div class="post-meta">
-      <span class="post-date">${formatDate(post.dateTimestamp)}</span>
-      <span class="post-read-more">Read more &rarr;</span>
-    </div>`;
-  card.addEventListener('click', () => {
-    location.href = 'post.html?id=' + encodeURIComponent(id);
-  });
-  return card;
-}
-
-function createCertCard(cert, id) {
+/* ---------- cert card ---------- */
+function createCertCard(cert) {
   const card = document.createElement('div');
   card.className = 'cert-card';
   card.innerHTML = `
@@ -69,10 +46,10 @@ function createCertCard(cert, id) {
 function openLightbox(cert) {
   const lb = $('#lightbox');
   if (!lb) return;
-  $('#lightbox-img').src              = cert.imageURL || '';
-  $('#lightbox-title').textContent    = cert.title || '';
-  $('#lightbox-desc').textContent     = cert.description || '';
-  $('#lightbox-date').textContent     = cert.date ? formatMonth(cert.date) : '';
+  $('#lightbox-img').src           = cert.imageURL || '';
+  $('#lightbox-title').textContent = cert.title || '';
+  $('#lightbox-desc').textContent  = cert.description || '';
+  $('#lightbox-date').textContent  = cert.date ? formatMonth(cert.date) : '';
   lb.classList.remove('hidden');
   $('#lightbox-overlay').classList.remove('hidden');
   document.body.style.overflow = 'hidden';
@@ -85,13 +62,9 @@ function closeLightbox() {
 
 /* ---------- wait for Firebase ---------- */
 function waitForFirebase(cb, tries = 0) {
-  if (typeof firebase !== 'undefined' && firebase.apps?.length) {
-    cb();
-  } else if (tries < 30) {
-    setTimeout(() => waitForFirebase(cb, tries + 1), 200);
-  } else {
-    console.warn('Firebase not ready. Check firebase-config.js.');
-  }
+  if (typeof firebase !== 'undefined' && firebase.apps?.length) cb();
+  else if (tries < 30) setTimeout(() => waitForFirebase(cb, tries + 1), 200);
+  else console.warn('Firebase not ready.');
 }
 
 /* ---------- boot ---------- */
@@ -100,20 +73,16 @@ document.addEventListener('DOMContentLoaded', () => {
   $('#lightbox-overlay')?.addEventListener('click', closeLightbox);
   document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLightbox(); });
 
-  // Mobile nav toggle
   const navToggle = $('.nav-toggle');
   const navLinks  = $('.nav-links');
   if (navToggle && navLinks) {
     navToggle.addEventListener('click', () => navLinks.classList.toggle('open'));
-    // Close nav when a link is clicked
     navLinks.querySelectorAll('a').forEach(a => a.addEventListener('click', () => navLinks.classList.remove('open')));
   }
 
   const path = location.pathname.split('/').pop();
   if (!path || path === 'index.html')    waitForFirebase(initHome);
-  else if (path === 'blog.html')         waitForFirebase(initBlog);
   else if (path === 'certificates.html') waitForFirebase(initCerts);
-  else if (path === 'post.html')         waitForFirebase(initPost);
 });
 
 /* ============================================================
@@ -122,50 +91,83 @@ document.addEventListener('DOMContentLoaded', () => {
 function initHome() {
   const db = getDB();
 
-  // Load profile photo
-  db.ref('profile/photoURL').once('value').then(snap => {
-    if (snap.exists() && snap.val()) {
-      const img = $('#avatar-img');
+  db.ref('profile').once('value').then(snap => {
+    const p = snap.val() || {};
+
+    // Profile photo
+    if (p.photoURL) {
+      const img      = $('#avatar-img');
       const initials = $('#avatar-initials');
       if (img) {
-        img.src = snap.val();
+        img.src = p.photoURL;
         img.style.display = 'block';
         img.onerror = () => { img.style.display = 'none'; if (initials) initials.style.display = 'block'; };
         if (initials) initials.style.display = 'none';
       }
     }
+
+    // Badge
+    const badgeEl = $('#hero-badge');
+    if (badgeEl && p.badge) badgeEl.textContent = p.badge;
+
+    // Job title
+    const titleEl = $('#hero-title');
+    if (titleEl && p.jobTitle) titleEl.textContent = p.jobTitle;
+
+    // Bio
+    const bioEl = $('#hero-bio');
+    if (bioEl && p.bio) bioEl.textContent = p.bio;
+
+    // Resume button
+    const resumeBtn = $('#resume-btn');
+    if (resumeBtn && p.resumeURL) {
+      resumeBtn.href = p.resumeURL;
+      resumeBtn.style.display = 'inline-flex';
+    }
+
+    // Skills
+    if (p.skills) {
+      const tags = p.skills.split(',').map(s => s.trim()).filter(Boolean);
+      const wrap = $('#skills-wrap');
+      if (wrap && tags.length) {
+        wrap.innerHTML = tags.map(s => `<span class="skill-tag">${safe(s)}</span>`).join('');
+        $('#skills-section')?.classList.remove('hidden');
+      }
+    }
+
+    // Contact
+    const emailLink = $('#contact-email-link');
+    const emailVal  = $('#contact-email-val');
+    const linkedIn  = $('#contact-linkedin-link');
+    let hasContact  = false;
+
+    if (p.email && emailLink) {
+      emailLink.href = 'mailto:' + p.email;
+      if (emailVal) emailVal.textContent = p.email;
+      emailLink.style.display = 'flex';
+      hasContact = true;
+    }
+    if (p.linkedin && linkedIn) {
+      linkedIn.href = p.linkedin;
+      linkedIn.style.display = 'flex';
+      hasContact = true;
+    }
+    if (hasContact) $('#contact-section')?.classList.remove('hidden');
+
+    // About cards
+    setAboutCard('#about-card-1', p.about1Icon, p.about1Title, p.about1Text);
+    setAboutCard('#about-card-2', p.about2Icon, p.about2Title, p.about2Text);
+    setAboutCard('#about-card-3', p.about3Icon, p.about3Title, p.about3Text);
+
   }).catch(() => {});
 
-  // Latest 3 published posts
-  const postsEl = $('#home-posts');
-  if (postsEl) {
-    db.ref('posts').orderByChild('dateTimestamp').limitToLast(3).once('value')
-      .then(snap => {
-        postsEl.innerHTML = '';
-        if (!snap.exists()) {
-          postsEl.innerHTML = '<p style="color:var(--text-muted)">No posts yet — check back soon!</p>';
-          return;
-        }
-        const posts = [];
-        snap.forEach(child => posts.push({ id: child.key, ...child.val() }));
-        posts.reverse().filter(p => p.published).forEach(p => postsEl.appendChild(createPostCard(p, p.id)));
-        if (!postsEl.querySelector('.post-card')) {
-          postsEl.innerHTML = '<p style="color:var(--text-muted)">No posts yet — check back soon!</p>';
-        }
-      })
-      .catch(() => { if (postsEl) postsEl.innerHTML = '<p style="color:var(--text-muted)">Could not load posts.</p>'; });
-  }
-
-  // Latest 4 certs
+  // Certificates teaser
   const certsEl = $('#home-certs');
   if (certsEl) {
     db.ref('certificates').limitToLast(4).once('value')
       .then(snap => {
         certsEl.innerHTML = '';
-        if (!snap.exists()) {
-          certsEl.style.display = 'none';
-          return;
-        }
+        if (!snap.exists()) { certsEl.style.display = 'none'; return; }
         const items = [];
         snap.forEach(child => items.push({ id: child.key, ...child.val() }));
         items.reverse().forEach(c => {
@@ -182,73 +184,12 @@ function initHome() {
   }
 }
 
-/* ============================================================
-   BLOG
-   ============================================================ */
-let allPosts = [];
-
-function initBlog() {
-  const db = getDB();
-  loadAllPosts(db);
-  setupSearch();
-  setupFilter();
-  $('#load-more-btn')?.addEventListener('click', () => {}); // all loaded at once
-}
-
-function loadAllPosts(db) {
-  const container = $('#blog-posts');
-  if (!container) return;
-
-  db.ref('posts').orderByChild('dateTimestamp').once('value')
-    .then(snap => {
-      container.innerHTML = '';
-      allPosts = [];
-      if (!snap.exists()) { showEmpty(true); return; }
-
-      snap.forEach(child => allPosts.push({ id: child.key, ...child.val() }));
-      allPosts = allPosts.reverse().filter(p => p.published);
-
-      if (!allPosts.length) { showEmpty(true); return; }
-
-      showEmpty(false);
-      allPosts.forEach(p => container.appendChild(createPostCard(p, p.id)));
-      const lmb = $('#load-more-btn');
-      if (lmb) lmb.style.display = 'none';
-    })
-    .catch(() => {
-      container.innerHTML = '<p style="color:var(--text-muted);padding:32px 0">Could not load posts. Firebase may not be configured yet.</p>';
-    });
-}
-
-function setupSearch() {
-  $('#blog-search')?.addEventListener('input', applyFilters);
-}
-function setupFilter() {
-  $$('.filter-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      $$('.filter-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      applyFilters();
-    });
-  });
-}
-function applyFilters() {
-  const query    = ($('#blog-search')?.value || '').toLowerCase().trim();
-  const category = $('.filter-btn.active')?.dataset.category || 'all';
-  const container = $('#blog-posts');
-  if (!container) return;
-  let visible = 0;
-  $$('.post-card', container).forEach(card => {
-    const matchCat   = category === 'all' || card.dataset.category === category;
-    const matchQuery = !query || card.dataset.title.includes(query) ||
-                       card.querySelector('.post-excerpt')?.textContent.toLowerCase().includes(query);
-    card.style.display = (matchCat && matchQuery) ? '' : 'none';
-    if (matchCat && matchQuery) visible++;
-  });
-  showEmpty(visible === 0);
-}
-function showEmpty(show) {
-  $('#blog-empty')?.classList.toggle('hidden', !show);
+function setAboutCard(selector, icon, title, text) {
+  const card = $(selector);
+  if (!card) return;
+  if (icon)  { const el = card.querySelector('.about-icon'); if (el) el.textContent = icon; }
+  if (title) { const el = card.querySelector('h3');          if (el) el.textContent = title; }
+  if (text)  { const el = card.querySelector('p');           if (el) el.textContent = text; }
 }
 
 /* ============================================================
@@ -264,47 +205,7 @@ function initCerts() {
       if (!snap.exists()) { $('#certs-empty')?.classList.remove('hidden'); return; }
       const items = [];
       snap.forEach(child => items.push({ id: child.key, ...child.val() }));
-      items.reverse().forEach(c => container.appendChild(createCertCard(c, c.id)));
+      items.reverse().forEach(c => container.appendChild(createCertCard(c)));
     })
     .catch(() => { container.innerHTML = '<p style="color:var(--text-muted);padding:32px 0">Could not load certificates.</p>'; });
-}
-
-/* ============================================================
-   POST DETAIL PAGE
-   ============================================================ */
-function initPost() {
-  const postId = new URLSearchParams(location.search).get('id');
-  if (!postId) { showPostError(); return; }
-
-  getDB().ref('posts/' + postId).once('value')
-    .then(snap => {
-      if (!snap.exists()) { showPostError(); return; }
-      const p = snap.val();
-      if (!p.published) { showPostError(); return; }
-
-      // Update page title
-      document.title = (p.title || 'Post') + ' — Ajamali Saiyad';
-
-      // Header
-      const catEl = $('#post-cat-badge');
-      if (catEl) catEl.textContent = p.category || 'Update';
-      const titleEl = $('#post-article-title');
-      if (titleEl) titleEl.textContent = p.title || 'Untitled';
-      const dateEl = $('#post-article-date');
-      if (dateEl) dateEl.textContent = formatDate(p.dateTimestamp);
-
-      // Content — rendered as HTML (admin-authored content)
-      const contentEl = $('#post-article-content');
-      if (contentEl) contentEl.innerHTML = p.content || '';
-
-      // Show article
-      $('#post-loading')?.classList.add('hidden');
-      $('#post-article')?.classList.remove('hidden');
-    })
-    .catch(() => showPostError());
-}
-
-function showPostError() {
-  $('#post-loading')?.classList.add('hidden');
-  $('#post-error')?.classList.remove('hidden');
 }

@@ -13,11 +13,6 @@ function safe(str) {
   if (!str) return '';
   return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#x27;');
 }
-
-function formatDate(ts) {
-  if (!ts) return '—';
-  return new Date(ts).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
-}
 function formatMonth(str) {
   if (!str) return '';
   const [y, m] = str.split('-');
@@ -97,24 +92,19 @@ function showApp(user) {
   $('#logout-btn')?.addEventListener('click', () => getAuth().signOut());
 
   bindMobileSidebar();
-
-  const path = location.pathname.split('/').pop();
-  if (path === 'add-post.html') initPostEditor();
-  else                          initDashboard();
+  initDashboard();
 }
 
 function bindMobileSidebar() {
-  const sidebar  = $('.admin-sidebar');
-  const overlay  = $('#sidebar-overlay');
-  const menuBtn  = $('#admin-menu-btn');
+  const sidebar = $('.admin-sidebar');
+  const overlay = $('#sidebar-overlay');
+  const menuBtn = $('#admin-menu-btn');
 
   const open  = () => { sidebar?.classList.add('open'); overlay?.classList.add('open'); };
   const close = () => { sidebar?.classList.remove('open'); overlay?.classList.remove('open'); };
 
   menuBtn?.addEventListener('click', open);
   overlay?.addEventListener('click', close);
-
-  // Close sidebar when a nav link is clicked on mobile
   $$('.sidebar-link').forEach(link => link.addEventListener('click', () => {
     if (window.innerWidth <= 768) close();
   }));
@@ -126,85 +116,31 @@ function bindMobileSidebar() {
 function initDashboard() {
   const db = getDB();
   loadStats(db);
-  loadPostsTable(db);
   loadCertsTable(db);
   bindCertModal(db);
   bindProfileModal(db);
+  loadHomeSettings(db);
+  bindHomeSettings(db);
 }
 
 /* --- Stats --- */
 function loadStats(db) {
-  db.ref('posts').once('value').then(snap => {
-    let pub = 0, draft = 0;
-    snap.forEach(c => c.val().published ? pub++ : draft++);
-    const sp = $('#stat-posts'), sd = $('#stat-drafts');
-    if (sp) sp.textContent = pub;
-    if (sd) sd.textContent = draft;
-  });
   db.ref('certificates').once('value').then(snap => {
     const el = $('#stat-certs');
     if (el) el.textContent = snap.numChildren();
   });
-}
-
-/* --- Posts table --- */
-function loadPostsTable(db) {
-  const tbody = $('#posts-tbody');
-  if (!tbody) return;
-
-  db.ref('posts').orderByChild('dateTimestamp').once('value').then(snap => {
-    tbody.innerHTML = '';
-    if (!snap.exists()) {
-      tbody.innerHTML = '<tr><td colspan="5" class="table-loading">No posts yet. <a href="add-post.html">Write your first post &rarr;</a></td></tr>';
-      return;
+  db.ref('profile/skills').once('value').then(snap => {
+    const el = $('#stat-skills');
+    if (el) {
+      const val = snap.val() || '';
+      el.textContent = val ? val.split(',').filter(s => s.trim()).length : 0;
     }
-    const rows = [];
-    snap.forEach(child => rows.push({ id: child.key, ...child.val() }));
-    rows.reverse().forEach(p => tbody.appendChild(buildPostRow(p, db)));
   });
 }
 
-function buildPostRow(p, db) {
-  const tr = document.createElement('tr');
-  tr.innerHTML = `
-    <td><strong>${safe(p.title) || 'Untitled'}</strong></td>
-    <td>${safe(p.category) || '—'}</td>
-    <td>${formatDate(p.dateTimestamp)}</td>
-    <td>
-      <label class="toggle-switch">
-        <input type="checkbox" class="publish-toggle" ${p.published ? 'checked' : ''} />
-        <span class="toggle-slider"></span>
-      </label>
-      <span class="status-pill ${p.published ? 'published' : 'draft'}">${p.published ? 'Published' : 'Draft'}</span>
-    </td>
-    <td>
-      <button class="action-btn edit-btn">Edit</button>
-      <button class="action-btn delete del-btn">Delete</button>
-    </td>`;
-
-  tr.querySelector('.publish-toggle').addEventListener('change', e => {
-    const pub = e.target.checked;
-    db.ref('posts/' + p.id + '/published').set(pub).then(() => {
-      const pill = tr.querySelector('.status-pill');
-      pill.textContent  = pub ? 'Published' : 'Draft';
-      pill.className    = `status-pill ${pub ? 'published' : 'draft'}`;
-      loadStats(db);
-    });
-  });
-
-  tr.querySelector('.edit-btn').addEventListener('click', () => {
-    location.href = `add-post.html?id=${p.id}`;
-  });
-
-  tr.querySelector('.del-btn').addEventListener('click', () => {
-    if (!confirm(`Delete "${p.title || 'this post'}"? Cannot be undone.`)) return;
-    db.ref('posts/' + p.id).remove().then(() => { tr.remove(); loadStats(db); });
-  });
-
-  return tr;
-}
-
-/* --- Certs table --- */
+/* ============================================================
+   CERTIFICATES TABLE
+   ============================================================ */
 function loadCertsTable(db) {
   const tbody = $('#certs-tbody');
   if (!tbody) return;
@@ -240,93 +176,6 @@ function buildCertRow(c, db) {
   return tr;
 }
 
-
-/* ============================================================
-   PROFILE PHOTO MODAL
-   ============================================================ */
-function bindProfileModal(db) {
-  let selectedBase64 = null;
-
-  $('#edit-profile-btn')?.addEventListener('click', () => {
-    selectedBase64 = null;
-    const fileInput = $('#profile-file-input');
-    const prev      = $('#profile-preview');
-    const saveBtn   = $('#profile-save-btn');
-    if (fileInput) fileInput.value = '';
-    if (prev)      { prev.src = ''; prev.style.display = 'none'; }
-    if (saveBtn)   saveBtn.disabled = true;
-
-    // Show existing photo if any
-    db.ref('profile/photoURL').once('value').then(snap => {
-      const url = snap.val() || '';
-      if (prev && url) { prev.src = url; prev.style.display = 'block'; }
-    });
-
-    $('#profile-modal')?.classList.remove('hidden');
-    $('#profile-modal-overlay')?.classList.remove('hidden');
-    document.body.style.overflow = 'hidden';
-  });
-
-  // File chosen — resize + preview
-  $('#profile-file-input')?.addEventListener('change', e => {
-    const file    = e.target.files[0];
-    const errEl   = $('#profile-file-error');
-    const prev    = $('#profile-preview');
-    const saveBtn = $('#profile-save-btn');
-    if (errEl) errEl.style.display = 'none';
-    selectedBase64 = null;
-    if (saveBtn) saveBtn.disabled = true;
-
-    if (!file) return;
-    if (file.size > 4 * 1024 * 1024) {
-      if (errEl) { errEl.textContent = 'File too large. Please choose a photo under 4 MB.'; errEl.style.display = 'block'; }
-      return;
-    }
-
-    const reader = new FileReader();
-    reader.onload = ev => {
-      const img = new Image();
-      img.onload = () => {
-        // Resize to max 300x300 using canvas
-        const MAX = 300;
-        let w = img.width, h = img.height;
-        if (w > h) { if (w > MAX) { h = Math.round(h * MAX / w); w = MAX; } }
-        else        { if (h > MAX) { w = Math.round(w * MAX / h); h = MAX; } }
-        const canvas = document.createElement('canvas');
-        canvas.width  = w;
-        canvas.height = h;
-        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-        selectedBase64 = canvas.toDataURL('image/jpeg', 0.82);
-        if (prev) { prev.src = selectedBase64; prev.style.display = 'block'; }
-        if (saveBtn) saveBtn.disabled = false;
-      };
-      img.src = ev.target.result;
-    };
-    reader.readAsDataURL(file);
-  });
-
-  const closeProfile = () => {
-    $('#profile-modal')?.classList.add('hidden');
-    $('#profile-modal-overlay')?.classList.add('hidden');
-    document.body.style.overflow = '';
-    selectedBase64 = null;
-  };
-  $('#profile-modal-close')?.addEventListener('click', closeProfile);
-  $('#profile-cancel-btn')?.addEventListener('click', closeProfile);
-  $('#profile-modal-overlay')?.addEventListener('click', closeProfile);
-
-  $('#profile-save-btn')?.addEventListener('click', () => {
-    if (!selectedBase64) { alert('Please choose a photo first.'); return; }
-    const btn = $('#profile-save-btn');
-    btn.disabled = true;
-    btn.textContent = 'Saving...';
-    db.ref('profile').set({ photoURL: selectedBase64 })
-      .then(() => { closeProfile(); showToast('Profile photo updated!'); })
-      .catch(err => { console.error(err); alert('Error saving. Check Firebase rules.'); })
-      .finally(() => { btn.disabled = false; btn.textContent = 'Save Photo'; });
-  });
-}
-
 /* ============================================================
    CERTIFICATE MODAL
    ============================================================ */
@@ -340,12 +189,11 @@ function bindCertModal(db) {
   $('#cert-cancel-btn')?.addEventListener('click', closeCertModal);
   $('#cert-modal-overlay')?.addEventListener('click', closeCertModal);
 
-  // File chosen — resize + preview
   $('#cert-file-input')?.addEventListener('change', e => {
-    const file   = e.target.files[0];
-    const errEl  = $('#cert-file-error');
-    const wrap   = $('#cert-img-preview-wrap');
-    const prev   = $('#cert-img-preview');
+    const file  = e.target.files[0];
+    const errEl = $('#cert-file-error');
+    const wrap  = $('#cert-img-preview-wrap');
+    const prev  = $('#cert-img-preview');
     if (errEl) errEl.style.display = 'none';
     certBase64 = null;
     if (!file) return;
@@ -365,8 +213,8 @@ function bindCertModal(db) {
         canvas.width = w; canvas.height = h;
         canvas.getContext('2d').drawImage(img, 0, 0, w, h);
         certBase64 = canvas.toDataURL('image/jpeg', 0.85);
-        if (prev)  { prev.src = certBase64; }
-        if (wrap)  { wrap.style.display = 'block'; }
+        if (prev) prev.src = certBase64;
+        if (wrap) wrap.style.display = 'block';
       };
       img.src = ev.target.result;
     };
@@ -382,10 +230,10 @@ function openCertModal(docId, data) {
 
   const titleEl = $('#cert-modal-title');
   if (titleEl) titleEl.textContent = docId ? 'Edit Certificate' : 'Add Certificate';
-  $('#cert-doc-id').value       = docId || '';
-  $('#cert-title').value        = data?.title || '';
-  $('#cert-date').value         = data?.date || '';
-  $('#cert-description').value  = data?.description || '';
+  $('#cert-doc-id').value      = docId || '';
+  $('#cert-title').value       = data?.title || '';
+  $('#cert-date').value        = data?.date || '';
+  $('#cert-description').value = data?.description || '';
 
   const fileInput = $('#cert-file-input');
   const errEl     = $('#cert-file-error');
@@ -394,12 +242,11 @@ function openCertModal(docId, data) {
   if (fileInput) fileInput.value = '';
   if (errEl)     errEl.style.display = 'none';
 
-  // Show existing image when editing
   if (data?.imageURL) {
-    if (prev)  prev.src = data.imageURL;
-    if (wrap)  wrap.style.display = 'block';
+    if (prev) prev.src = data.imageURL;
+    if (wrap) wrap.style.display = 'block';
   } else {
-    if (wrap)  wrap.style.display = 'none';
+    if (wrap) wrap.style.display = 'none';
   }
 
   $('#cert-modal')?.classList.remove('hidden');
@@ -416,7 +263,7 @@ function closeCertModal() {
 }
 
 function saveCert(db) {
-  const docId = $('#cert-doc-id').value;
+  const docId    = $('#cert-doc-id').value;
   const imageURL = certBase64 || certEditExistingImage;
 
   if (!$('#cert-title').value.trim()) { alert('Certificate title is required.'); return; }
@@ -424,7 +271,7 @@ function saveCert(db) {
 
   const data = {
     title:       $('#cert-title').value.trim(),
-    imageURL:    imageURL,
+    imageURL,
     date:        $('#cert-date').value,
     description: $('#cert-description').value.trim()
   };
@@ -452,116 +299,156 @@ function saveCert(db) {
 }
 
 /* ============================================================
-   POST EDITOR
+   PROFILE PHOTO MODAL
    ============================================================ */
-function initPostEditor() {
-  const db     = getDB();
-  const editId = new URLSearchParams(location.search).get('id');
+function bindProfileModal(db) {
+  let selectedBase64 = null;
 
-  if (editId) {
-    const h = $('#page-heading');
-    if (h) h.textContent = 'Edit Post';
+  $('#edit-profile-btn')?.addEventListener('click', () => {
+    selectedBase64 = null;
+    const fileInput = $('#profile-file-input');
+    const prev      = $('#profile-preview');
+    const saveBtn   = $('#profile-save-btn');
+    if (fileInput) fileInput.value = '';
+    if (prev)      { prev.src = ''; prev.style.display = 'none'; }
+    if (saveBtn)   saveBtn.disabled = true;
 
-    db.ref('posts/' + editId).once('value').then(snap => {
-      if (!snap.exists()) return;
-      const p = snap.val();
-      const titleEl   = $('#post-title');
-      const contentEl = $('#post-content');
-      if (titleEl)   titleEl.value       = p.title || '';
-      if (contentEl) contentEl.innerHTML = p.content || '';
-      const catEl = $('#post-category');
-      const pubEl = $('#post-published');
-      const excEl = $('#post-excerpt');
-      if (catEl) catEl.value   = p.category || 'update';
-      if (pubEl) pubEl.checked = !!p.published;
-      if (excEl) excEl.value   = p.excerpt || '';
-      updatePublishLabel(!!p.published);
-      updateExcerptCount();
+    db.ref('profile/photoURL').once('value').then(snap => {
+      const url = snap.val() || '';
+      if (prev && url) { prev.src = url; prev.style.display = 'block'; }
     });
-  }
 
-  $('#post-published')?.addEventListener('change', e => updatePublishLabel(e.target.checked));
-  $('#post-excerpt')?.addEventListener('input', updateExcerptCount);
-
-  $$('.toolbar-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const cmd = btn.dataset.cmd;
-      if (!cmd) return;
-      if (cmd === 'createLink') {
-        const url = prompt('Enter URL:');
-        if (url) document.execCommand(cmd, false, url);
-      } else {
-        document.execCommand(cmd, false, null);
-      }
-      $('#post-content')?.focus();
-    });
+    $('#profile-modal')?.classList.remove('hidden');
+    $('#profile-modal-overlay')?.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
   });
 
-  // Warn before leaving with unsaved content
-  let postDirty = false;
-  const markDirty = () => { postDirty = true; };
-  $('#post-title')?.addEventListener('input', markDirty);
-  $('#post-content')?.addEventListener('input', markDirty);
-  $('#post-excerpt')?.addEventListener('input', markDirty);
-
-  window.addEventListener('beforeunload', e => {
-    if (postDirty) {
-      e.preventDefault();
-      e.returnValue = '';
+  $('#profile-file-input')?.addEventListener('change', e => {
+    const file    = e.target.files[0];
+    const errEl   = $('#profile-file-error');
+    const prev    = $('#profile-preview');
+    const saveBtn = $('#profile-save-btn');
+    if (errEl) errEl.style.display = 'none';
+    selectedBase64 = null;
+    if (saveBtn) saveBtn.disabled = true;
+    if (!file) return;
+    if (file.size > 4 * 1024 * 1024) {
+      if (errEl) { errEl.textContent = 'File too large. Please choose a photo under 4 MB.'; errEl.style.display = 'block'; }
+      return;
     }
+    const reader = new FileReader();
+    reader.onload = ev => {
+      const img = new Image();
+      img.onload = () => {
+        const MAX = 300;
+        let w = img.width, h = img.height;
+        if (w > h) { if (w > MAX) { h = Math.round(h * MAX / w); w = MAX; } }
+        else        { if (h > MAX) { w = Math.round(w * MAX / h); h = MAX; } }
+        const canvas = document.createElement('canvas');
+        canvas.width = w; canvas.height = h;
+        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+        selectedBase64 = canvas.toDataURL('image/jpeg', 0.82);
+        if (prev)    { prev.src = selectedBase64; prev.style.display = 'block'; }
+        if (saveBtn) saveBtn.disabled = false;
+      };
+      img.src = ev.target.result;
+    };
+    reader.readAsDataURL(file);
   });
 
-  $('#post-form')?.addEventListener('submit', e => {
-    e.preventDefault();
-    postDirty = false;
-    savePost(db, editId);
-  });
-}
-
-function updatePublishLabel(pub) {
-  const el = $('#publish-label');
-  if (el) el.textContent = pub ? 'Published' : 'Draft';
-}
-function updateExcerptCount() {
-  const el = $('#post-excerpt'), ctr = $('#excerpt-count');
-  if (el && ctr) ctr.textContent = `${el.value.length} / 250`;
-}
-
-function savePost(db, editId) {
-  const title   = $('#post-title')?.value.trim();
-  const content = $('#post-content')?.innerHTML.trim();
-  if (!title)                        { alert('Please add a title.'); return; }
-  if (!content || content === '<br>') { alert('Please write some content.'); return; }
-
-  const btn  = $('#save-post-btn');
-  const txt  = $('#save-text');
-  const spin = $('#save-spinner');
-  btn.disabled = true;
-  txt.textContent = 'Saving...';
-  spin?.classList.remove('hidden');
-
-  const data = {
-    title,
-    content,
-    category:      $('#post-category')?.value || 'update',
-    published:     $('#post-published')?.checked || false,
-    excerpt:       $('#post-excerpt')?.value.trim() || '',
-    dateTimestamp: Date.now()
+  const closeProfile = () => {
+    $('#profile-modal')?.classList.add('hidden');
+    $('#profile-modal-overlay')?.classList.add('hidden');
+    document.body.style.overflow = '';
+    selectedBase64 = null;
   };
+  $('#profile-modal-close')?.addEventListener('click', closeProfile);
+  $('#profile-cancel-btn')?.addEventListener('click', closeProfile);
+  $('#profile-modal-overlay')?.addEventListener('click', closeProfile);
 
-  const op = editId
-    ? db.ref('posts/' + editId).update(data)
-    : db.ref('posts').push(data);
+  $('#profile-save-btn')?.addEventListener('click', () => {
+    if (!selectedBase64) { alert('Please choose a photo first.'); return; }
+    const btn = $('#profile-save-btn');
+    btn.disabled = true;
+    btn.textContent = 'Saving...';
+    db.ref('profile/photoURL').set(selectedBase64)
+      .then(() => { closeProfile(); showToast('Profile photo updated!'); })
+      .catch(err => { console.error(err); alert('Error saving. Check Firebase rules.'); })
+      .finally(() => { btn.disabled = false; btn.textContent = 'Save Photo'; });
+  });
+}
 
-  op.then(() => {
-    showToast(editId ? 'Post updated!' : 'Post saved!');
-    setTimeout(() => { location.href = 'dashboard.html'; }, 900);
-  }).catch(err => {
-    console.error(err);
-    alert('Error saving post. Check the console.');
-  }).finally(() => {
-    btn.disabled = false;
-    txt.textContent = 'Save Post';
-    spin?.classList.add('hidden');
+/* ============================================================
+   HOME PAGE SETTINGS
+   ============================================================ */
+function loadHomeSettings(db) {
+  db.ref('profile').once('value').then(snap => {
+    const p = snap.val() || {};
+    const set = (id, val) => { const el = $(id); if (el && val) el.value = val; };
+
+    set('#hs-badge',        p.badge);
+    set('#hs-jobtitle',     p.jobTitle);
+    set('#hs-bio',          p.bio);
+    set('#hs-resume',       p.resumeURL);
+    set('#hs-skills',       p.skills);
+    set('#hs-email',        p.email);
+    set('#hs-linkedin',     p.linkedin);
+    set('#hs-about1-icon',  p.about1Icon);
+    set('#hs-about1-title', p.about1Title);
+    set('#hs-about1-text',  p.about1Text);
+    set('#hs-about2-icon',  p.about2Icon);
+    set('#hs-about2-title', p.about2Title);
+    set('#hs-about2-text',  p.about2Text);
+    set('#hs-about3-icon',  p.about3Icon);
+    set('#hs-about3-title', p.about3Title);
+    set('#hs-about3-text',  p.about3Text);
+  });
+}
+
+function bindHomeSettings(db) {
+  $('#save-home-btn')?.addEventListener('click', () => {
+    const btn  = $('#save-home-btn');
+    const txt  = $('#save-home-text');
+    const spin = $('#save-home-spinner');
+    btn.disabled = true;
+    txt.textContent = 'Saving...';
+    spin?.classList.remove('hidden');
+
+    const get = id => $(id)?.value.trim() || '';
+
+    const data = {
+      badge:        get('#hs-badge'),
+      jobTitle:     get('#hs-jobtitle'),
+      bio:          get('#hs-bio'),
+      resumeURL:    get('#hs-resume'),
+      skills:       get('#hs-skills'),
+      email:        get('#hs-email'),
+      linkedin:     get('#hs-linkedin'),
+      about1Icon:   get('#hs-about1-icon'),
+      about1Title:  get('#hs-about1-title'),
+      about1Text:   get('#hs-about1-text'),
+      about2Icon:   get('#hs-about2-icon'),
+      about2Title:  get('#hs-about2-title'),
+      about2Text:   get('#hs-about2-text'),
+      about3Icon:   get('#hs-about3-icon'),
+      about3Title:  get('#hs-about3-title'),
+      about3Text:   get('#hs-about3-text'),
+    };
+
+    // Preserve existing photoURL — don't overwrite it
+    db.ref('profile/photoURL').once('value').then(snap => {
+      if (snap.val()) data.photoURL = snap.val();
+      return db.ref('profile').set(data);
+    }).then(() => {
+      showToast('Home page updated!');
+      loadStats(db);
+    }).catch(err => {
+      console.error(err);
+      alert('Error saving. Check Firebase rules.');
+    }).finally(() => {
+      btn.disabled = false;
+      txt.textContent = 'Save Changes';
+      spin?.classList.add('hidden');
+    });
   });
 }
