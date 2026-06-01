@@ -50,35 +50,50 @@ function createCertCard(cert) {
   const hasPdfUrl  = !!cert.pdfURL;
   const hasImage   = !!cert.imageURL;
 
-  const imgHtml = hasImage
-    ? `<img src="${safe(cert.imageURL)}" alt="${safe(cert.title) || 'Certificate'}" loading="lazy"
-           onerror="this.style.background='#F3F4F6';this.removeAttribute('src')" />`
-    : `<div class="cert-pdf-placeholder"><span>&#128196;</span><p>PDF Certificate</p></div>`;
+  // Build media area using DOM (never put base64 strings into innerHTML)
+  if (hasImage) {
+    const img = document.createElement('img');
+    img.alt     = cert.title || 'Certificate';
+    img.loading = 'lazy';
+    img.onerror = function () { this.style.background = '#F3F4F6'; this.removeAttribute('src'); };
+    img.src = cert.imageURL;   // set AFTER onerror so handler is ready
+    card.appendChild(img);
+  } else {
+    const ph = document.createElement('div');
+    ph.className = 'cert-pdf-placeholder';
+    ph.innerHTML = '<span>&#128196;</span><p>PDF Certificate</p>';
+    card.appendChild(ph);
+  }
 
-  // PDF button: direct upload takes priority over Drive link
-  let pdfBtn = '';
+  // Body: title only (no date, no description)
+  const body = document.createElement('div');
+  body.className = 'cert-card-body';
+
+  const h3 = document.createElement('h3');
+  h3.textContent = cert.title || 'Certificate';
+  body.appendChild(h3);
+
+  // PDF button
   if (hasPdfData) {
-    pdfBtn = `<button class="cert-pdf-btn open-pdf-btn" onclick="event.stopPropagation()">Open PDF &#8599;</button>`;
+    const btn = document.createElement('button');
+    btn.className   = 'cert-pdf-btn';
+    btn.textContent = 'Open PDF ↗';
+    btn.addEventListener('click', e => { e.stopPropagation(); openPdfBlob(cert.pdfData); });
+    body.appendChild(btn);
   } else if (hasPdfUrl) {
-    pdfBtn = `<a href="${safe(ensureUrl(cert.pdfURL))}" target="_blank" rel="noopener" class="cert-pdf-btn" onclick="event.stopPropagation()">View PDF &#8599;</a>`;
+    const a = document.createElement('a');
+    a.className = 'cert-pdf-btn';
+    a.href      = ensureUrl(cert.pdfURL);
+    a.target    = '_blank';
+    a.rel       = 'noopener';
+    a.textContent = 'View PDF ↗';
+    a.addEventListener('click', e => e.stopPropagation());
+    body.appendChild(a);
   }
 
-  card.innerHTML = `
-    ${imgHtml}
-    <div class="cert-card-body">
-      <h3>${safe(cert.title) || 'Certificate'}</h3>
-      <p>${safe(cert.description)}</p>
-      ${cert.date ? `<span class="badge">${safe(formatMonth(cert.date))}</span>` : ''}
-      ${pdfBtn}
-    </div>`;
+  card.appendChild(body);
 
-  if (hasPdfData) {
-    card.querySelector('.open-pdf-btn')?.addEventListener('click', e => {
-      e.stopPropagation();
-      openPdfBlob(cert.pdfData);
-    });
-  }
-
+  // Click handler
   if (hasImage) {
     card.addEventListener('click', () => openLightbox(cert));
   } else if (hasPdfData) {
@@ -88,6 +103,7 @@ function createCertCard(cert) {
     card.style.cursor = 'pointer';
     card.addEventListener('click', () => window.open(ensureUrl(cert.pdfURL), '_blank'));
   }
+
   return card;
 }
 
@@ -95,10 +111,10 @@ function createCertCard(cert) {
 function openLightbox(cert) {
   const lb = $('#lightbox');
   if (!lb) return;
-  $('#lightbox-img').src           = cert.imageURL || '';
-  $('#lightbox-title').textContent = cert.title || '';
-  $('#lightbox-desc').textContent  = cert.description || '';
-  $('#lightbox-date').textContent  = cert.date ? formatMonth(cert.date) : '';
+  const imgEl = $('#lightbox-img');
+  if (imgEl) imgEl.src = cert.imageURL || '';
+  const titleEl = $('#lightbox-title');
+  if (titleEl) titleEl.textContent = cert.title || '';
   lb.classList.remove('hidden');
   $('#lightbox-overlay').classList.remove('hidden');
   document.body.style.overflow = 'hidden';
