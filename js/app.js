@@ -26,6 +26,12 @@ function safe(str) {
     .replace(/'/g, '&#x27;');
 }
 
+function ensureUrl(url) {
+  if (!url) return '#';
+  if (/^https?:\/\//i.test(url)) return url;
+  return 'https://' + url;
+}
+
 /* ---------- cert card ---------- */
 function createCertCard(cert) {
   const card = document.createElement('div');
@@ -121,7 +127,7 @@ function initHome() {
     // Resume button
     const resumeBtn = $('#resume-btn');
     if (resumeBtn && p.resumeURL) {
-      resumeBtn.href = p.resumeURL;
+      resumeBtn.href = ensureUrl(p.resumeURL);
       resumeBtn.style.display = 'inline-flex';
     }
 
@@ -148,7 +154,7 @@ function initHome() {
       hasContact = true;
     }
     if (p.linkedin && linkedIn) {
-      linkedIn.href = p.linkedin;
+      linkedIn.href = ensureUrl(p.linkedin);
       linkedIn.style.display = 'flex';
       hasContact = true;
     }
