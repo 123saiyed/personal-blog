@@ -46,17 +46,17 @@ function createCertCard(cert) {
   const card = document.createElement('div');
   card.className = 'cert-card';
 
-  const hasPdfData = !!cert.pdfData;
-  const hasPdfUrl  = !!cert.pdfURL;
-  const hasImage   = !!cert.imageURL;
+  const hasImage  = !!cert.imageURL;
+  const hasPdf    = !!cert.hasPdf;
+  const hasPdfUrl = !!cert.pdfURL && !hasPdf;
 
-  // Build media area using DOM (never put base64 strings into innerHTML)
+  // Media — never put base64 in innerHTML
   if (hasImage) {
     const img = document.createElement('img');
     img.alt     = cert.title || 'Certificate';
     img.loading = 'lazy';
     img.onerror = function () { this.style.background = '#F3F4F6'; this.removeAttribute('src'); };
-    img.src = cert.imageURL;   // set AFTER onerror so handler is ready
+    img.src     = cert.imageURL;
     card.appendChild(img);
   } else {
     const ph = document.createElement('div');
@@ -65,27 +65,39 @@ function createCertCard(cert) {
     card.appendChild(ph);
   }
 
-  // Body: title only (no date, no description)
+  // Body: title only
   const body = document.createElement('div');
   body.className = 'cert-card-body';
-
   const h3 = document.createElement('h3');
   h3.textContent = cert.title || 'Certificate';
   body.appendChild(h3);
 
-  // PDF button
-  if (hasPdfData) {
+  // PDF button — lazy-loads from Firebase only when clicked
+  if (hasPdf) {
     const btn = document.createElement('button');
     btn.className   = 'cert-pdf-btn';
     btn.textContent = 'Open PDF ↗';
-    btn.addEventListener('click', e => { e.stopPropagation(); openPdfBlob(cert.pdfData); });
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      btn.textContent = 'Loading…';
+      btn.disabled    = true;
+      getDB().ref('certificate_pdfs/' + cert.id).once('value')
+        .then(snap => {
+          if (snap.val()) return openPdfBlob(snap.val());
+          // Fallback: old inline format still in cert node
+          return getDB().ref('certificates/' + cert.id + '/pdfData').once('value')
+            .then(s2 => { if (s2.val()) openPdfBlob(s2.val()); else alert('PDF not found.'); });
+        })
+        .catch(() => alert('Could not load PDF.'))
+        .finally(() => { btn.textContent = 'Open PDF ↗'; btn.disabled = false; });
+    });
     body.appendChild(btn);
   } else if (hasPdfUrl) {
     const a = document.createElement('a');
-    a.className = 'cert-pdf-btn';
-    a.href      = ensureUrl(cert.pdfURL);
-    a.target    = '_blank';
-    a.rel       = 'noopener';
+    a.className   = 'cert-pdf-btn';
+    a.href        = ensureUrl(cert.pdfURL);
+    a.target      = '_blank';
+    a.rel         = 'noopener';
     a.textContent = 'View PDF ↗';
     a.addEventListener('click', e => e.stopPropagation());
     body.appendChild(a);
@@ -93,12 +105,12 @@ function createCertCard(cert) {
 
   card.appendChild(body);
 
-  // Click handler
+  // Card click handler
   if (hasImage) {
     card.addEventListener('click', () => openLightbox(cert));
-  } else if (hasPdfData) {
+  } else if (hasPdf) {
     card.style.cursor = 'pointer';
-    card.addEventListener('click', () => openPdfBlob(cert.pdfData));
+    card.addEventListener('click', () => body.querySelector('.cert-pdf-btn')?.click());
   } else if (hasPdfUrl) {
     card.style.cursor = 'pointer';
     card.addEventListener('click', () => window.open(ensureUrl(cert.pdfURL), '_blank'));
@@ -234,27 +246,43 @@ function initHome() {
         certsEl.innerHTML = '';
         if (!snap.exists()) { certsEl.style.display = 'none'; return; }
         const items = [];
-        snap.forEach(child => items.push({ id: child.key, ...child.val() }));
+        snap.forEach(child => {
+          const v = child.val() || {};
+          items.push({
+            id:       child.key,
+            title:    v.title    || '',
+            imageURL: v.imageURL || '',
+            pdfURL:   v.pdfURL   || '',
+            hasPdf:   !!(v.hasPdf || v.pdfData || v.pdfURL),
+          });
+        });
         items.reverse().forEach(c => {
           if (c.imageURL) {
             const img = document.createElement('img');
             img.className = 'cert-thumb';
-            img.src = c.imageURL;
-            img.alt = c.title || 'Certificate';
-            img.loading = 'lazy';
+            img.src       = c.imageURL;
+            img.alt       = c.title || 'Certificate';
+            img.loading   = 'lazy';
             img.addEventListener('click', () => openLightbox(c));
             certsEl.appendChild(img);
-          } else if (c.pdfData) {
+          } else if (c.hasPdf) {
             const box = document.createElement('div');
             box.className = 'cert-thumb cert-thumb-pdf';
-            box.title = c.title || 'Certificate';
+            box.title     = c.title || 'Certificate';
             box.innerHTML = '<span>&#128196;</span>';
-            box.addEventListener('click', () => openPdfBlob(c.pdfData));
+            box.addEventListener('click', () => {
+              getDB().ref('certificate_pdfs/' + c.id).once('value')
+                .then(snap => {
+                  if (snap.val()) return openPdfBlob(snap.val());
+                  return getDB().ref('certificates/' + c.id + '/pdfData').once('value')
+                    .then(s2 => { if (s2.val()) openPdfBlob(s2.val()); });
+                }).catch(() => {});
+            });
             certsEl.appendChild(box);
           } else if (c.pdfURL) {
             const box = document.createElement('div');
             box.className = 'cert-thumb cert-thumb-pdf';
-            box.title = c.title || 'Certificate';
+            box.title     = c.title || 'Certificate';
             box.innerHTML = '<span>&#128196;</span>';
             box.addEventListener('click', () => window.open(ensureUrl(c.pdfURL), '_blank'));
             certsEl.appendChild(box);
@@ -283,10 +311,35 @@ function initCerts() {
   getDB().ref('certificates').once('value')
     .then(snap => {
       container.innerHTML = '';
-      if (!snap.exists()) { $('#certs-empty')?.classList.remove('hidden'); return; }
+      if (!snap.exists() || snap.numChildren() === 0) {
+        $('#certs-empty')?.classList.remove('hidden');
+        return;
+      }
       const items = [];
-      snap.forEach(child => items.push({ id: child.key, ...child.val() }));
-      items.reverse().forEach(c => container.appendChild(createCertCard(c)));
+      snap.forEach(child => {
+        const v = child.val() || {};
+        // Only keep display fields — pdfData is fetched on-demand, not loaded here
+        items.push({
+          id:       child.key,
+          title:    v.title    || '',
+          imageURL: v.imageURL || '',
+          pdfURL:   v.pdfURL   || '',
+          hasPdf:   !!(v.hasPdf || v.pdfData || v.pdfURL),
+        });
+      });
+      items.reverse().forEach(c => {
+        try {
+          container.appendChild(createCertCard(c));
+        } catch (err) {
+          console.error('Cert render error:', c.id, err);
+        }
+      });
+      if (container.children.length === 0) {
+        $('#certs-empty')?.classList.remove('hidden');
+      }
     })
-    .catch(() => { container.innerHTML = '<p style="color:var(--text-muted);padding:32px 0">Could not load certificates.</p>'; });
+    .catch(err => {
+      console.error('Certs load error:', err);
+      container.innerHTML = '<p style="color:var(--text-muted);padding:40px 0;text-align:center">Could not load certificates. Please refresh the page.</p>';
+    });
 }

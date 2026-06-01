@@ -192,7 +192,7 @@ function buildCertRow(c, db) {
   let viewCell;
   if (c.imageURL) {
     viewCell = `<button class="link-more view-img-btn" style="font-size:.82rem;background:none;border:none;padding:0;cursor:pointer">View Image</button>`;
-  } else if (c.pdfData) {
+  } else if (c.hasPdf || c.pdfData) {
     viewCell = `<button class="link-more view-pdf-btn" style="font-size:.82rem;background:none;border:none;padding:0;cursor:pointer">View PDF</button>`;
   } else if (c.pdfURL) {
     viewCell = `<a href="${safe(c.pdfURL)}" target="_blank" rel="noopener" class="link-more" style="font-size:.82rem">View PDF ↗</a>`;
@@ -216,17 +216,24 @@ function buildCertRow(c, db) {
       w.document.close();
     });
   }
-  if (c.pdfData) {
-    tr.querySelector('.view-pdf-btn').addEventListener('click', () => openPdfBlob(c.pdfData));
+  if (c.hasPdf || c.pdfData) {
+    tr.querySelector('.view-pdf-btn').addEventListener('click', () => {
+      if (c.pdfData) { openPdfBlob(c.pdfData); return; }  // old inline format
+      db.ref('certificate_pdfs/' + c.id).once('value')
+        .then(snap => { if (snap.val()) openPdfBlob(snap.val()); else alert('PDF not found.'); });
+    });
   }
 
-  tr.querySelector('.edit-cert-btn').addEventListener('click', () => openCertModal(c.id, c));
+  tr.querySelector('.edit-cert-btn').addEventListener('click', () => openCertModal(c.id, c, db));
 
   tr.querySelector('.del-cert-btn').addEventListener('click', () => {
     if (!confirm(`Delete "${c.title}"?\nThis cannot be undone.`)) return;
-    db.ref('certificates/' + c.id).remove()
-      .then(() => loadStats(db))
-      .catch(() => alert('Error deleting. Check Firebase rules.'));
+    Promise.all([
+      db.ref('certificates/' + c.id).remove(),
+      db.ref('certificate_pdfs/' + c.id).remove()
+    ])
+    .then(() => loadStats(db))
+    .catch(() => alert('Error deleting. Check Firebase rules.'));
   });
   return tr;
 }
@@ -310,11 +317,28 @@ function bindCertModal(db) {
   $('#cert-form')?.addEventListener('submit', e => { e.preventDefault(); saveCert(db); });
 }
 
-function openCertModal(docId, data) {
+function openCertModal(docId, data, db) {
   certBase64              = null;
   certPdfData             = null;
-  certEditExistingImage   = data?.imageURL  || null;
-  certEditExistingPdfData = data?.pdfData   || null;
+  certEditExistingImage   = data?.imageURL || null;
+  certEditExistingPdfData = data?.pdfData  || null;  // backward compat: old inline format
+
+  // New format: load pdfData from separate node when editing
+  if (docId && data?.hasPdf && !data?.pdfData && db) {
+    db.ref('certificate_pdfs/' + docId).once('value').then(snap => {
+      if (snap.val()) {
+        certEditExistingPdfData = snap.val();
+        if (!data?.imageURL) {
+          const pdfPrev = $('#cert-pdf-preview');
+          if (pdfPrev) {
+            pdfPrev.querySelector('.pdf-fname').textContent = 'Existing PDF (saved)';
+            pdfPrev.querySelector('.pdf-fsize').textContent = 'Choose a new file to replace it';
+            pdfPrev.style.display = 'flex';
+          }
+        }
+      }
+    });
+  }
   const isEdit = !!docId;
 
   // Modal title
@@ -387,46 +411,51 @@ function closeCertModal() {
 }
 
 function saveCert(db) {
-  const docId    = $('#cert-doc-id').value;
-  const imageURL = certBase64              || certEditExistingImage   || '';
-  const pdfData  = certPdfData             || certEditExistingPdfData || '';
-  const pdfURL   = $('#cert-pdf-url')?.value.trim() || '';
+  const docId      = $('#cert-doc-id').value;
+  const imageURL   = certBase64    || certEditExistingImage   || '';
+  const newPdfData = certPdfData   || '';
+  const pdfURL     = $('#cert-pdf-url')?.value.trim() || '';
+  const hasPdf     = !!(newPdfData || certEditExistingPdfData || pdfURL);
 
   if (!$('#cert-title').value.trim()) { alert('Certificate title is required.'); return; }
-  if (!imageURL && !pdfData && !pdfURL) {
+  if (!imageURL && !hasPdf) {
     alert('Please upload an image or PDF file, OR paste a Google Drive PDF link.');
     return;
   }
 
-  const data = {
+  // pdfData stored separately — cert node stays small for fast page loads
+  const certData = {
     title:       $('#cert-title').value.trim(),
     imageURL,
-    pdfData,
+    hasPdf,
     pdfURL,
     date:        $('#cert-date').value,
     description: $('#cert-description').value.trim()
   };
 
   const btn = $('#cert-save-btn');
-  btn.disabled = true;
+  btn.disabled    = true;
   btn.textContent = 'Saving...';
 
-  const op = docId
-    ? db.ref('certificates/' + docId).update(data)
-    : db.ref('certificates').push(data);
+  let certId, metaOp;
+  if (docId) {
+    certId = docId;
+    metaOp = db.ref('certificates/' + docId).update(certData);
+  } else {
+    const newRef = db.ref('certificates').push();
+    certId = newRef.key;
+    metaOp = newRef.set(certData);
+  }
 
-  op.then(() => {
-    closeCertModal();
-    loadStats(db);
-    showToast('Certificate saved!');
-    // Table auto-updates via real-time listener — no manual reload needed
-  }).catch(err => {
-    console.error(err);
-    alert('Error saving. Check Firebase rules.');
-  }).finally(() => {
-    btn.disabled = false;
-    btn.textContent = 'Save Certificate';
-  });
+  // Save PDF to separate node only if a new PDF was just uploaded
+  const pdfOp = newPdfData
+    ? db.ref('certificate_pdfs/' + certId).set(newPdfData)
+    : Promise.resolve();
+
+  Promise.all([metaOp, pdfOp])
+    .then(() => { closeCertModal(); loadStats(db); showToast('Certificate saved!'); })
+    .catch(err => { console.error(err); alert('Error saving. Check Firebase rules.'); })
+    .finally(() => { btn.disabled = false; btn.textContent = 'Save Certificate'; });
 }
 
 /* ============================================================

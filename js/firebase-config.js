@@ -18,11 +18,11 @@
 
   {
     "rules": {
-      "posts": {
+      "certificates": {
         ".read": true,
         ".write": "auth != null"
       },
-      "certificates": {
+      "certificate_pdfs": {
         ".read": true,
         ".write": "auth != null"
       },
