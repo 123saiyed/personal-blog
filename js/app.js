@@ -36,15 +36,31 @@ function ensureUrl(url) {
 function createCertCard(cert) {
   const card = document.createElement('div');
   card.className = 'cert-card';
+
+  const imgHtml = cert.imageURL
+    ? `<img src="${safe(cert.imageURL)}" alt="${safe(cert.title) || 'Certificate'}" loading="lazy"
+           onerror="this.style.background='#F3F4F6';this.removeAttribute('src')" />`
+    : `<div class="cert-pdf-placeholder"><span>&#128196;</span><p>PDF Certificate</p></div>`;
+
+  const pdfBtn = cert.pdfURL
+    ? `<a href="${safe(ensureUrl(cert.pdfURL))}" target="_blank" rel="noopener" class="cert-pdf-btn" onclick="event.stopPropagation()">View PDF &#8599;</a>`
+    : '';
+
   card.innerHTML = `
-    <img src="${safe(cert.imageURL)}" alt="${safe(cert.title) || 'Certificate'}" loading="lazy"
-         onerror="this.style.background='#F3F4F6';this.removeAttribute('src')" />
+    ${imgHtml}
     <div class="cert-card-body">
       <h3>${safe(cert.title) || 'Certificate'}</h3>
       <p>${safe(cert.description)}</p>
       ${cert.date ? `<span class="badge">${safe(formatMonth(cert.date))}</span>` : ''}
+      ${pdfBtn}
     </div>`;
-  card.addEventListener('click', () => openLightbox(cert));
+
+  if (cert.imageURL) {
+    card.addEventListener('click', () => openLightbox(cert));
+  } else if (cert.pdfURL) {
+    card.style.cursor = 'pointer';
+    card.addEventListener('click', () => window.open(ensureUrl(cert.pdfURL), '_blank'));
+  }
   return card;
 }
 
@@ -177,13 +193,22 @@ function initHome() {
         const items = [];
         snap.forEach(child => items.push({ id: child.key, ...child.val() }));
         items.reverse().forEach(c => {
-          const img = document.createElement('img');
-          img.className = 'cert-thumb';
-          img.src = c.imageURL || '';
-          img.alt = c.title || 'Certificate';
-          img.loading = 'lazy';
-          img.addEventListener('click', () => openLightbox(c));
-          certsEl.appendChild(img);
+          if (c.imageURL) {
+            const img = document.createElement('img');
+            img.className = 'cert-thumb';
+            img.src = c.imageURL;
+            img.alt = c.title || 'Certificate';
+            img.loading = 'lazy';
+            img.addEventListener('click', () => openLightbox(c));
+            certsEl.appendChild(img);
+          } else if (c.pdfURL) {
+            const box = document.createElement('div');
+            box.className = 'cert-thumb cert-thumb-pdf';
+            box.title = c.title || 'Certificate';
+            box.innerHTML = '<span>&#128196;</span>';
+            box.addEventListener('click', () => window.open(ensureUrl(c.pdfURL), '_blank'));
+            certsEl.appendChild(box);
+          }
         });
       })
       .catch(() => { if (certsEl) certsEl.innerHTML = ''; });

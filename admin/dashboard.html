@@ -259,6 +259,11 @@
           <img id="cert-img-preview" src="" alt="Preview"
                style="max-width:100%;max-height:160px;border-radius:8px;border:1px solid #e5e7eb;object-fit:contain;" />
         </div>
+        <div class="form-group" style="margin-top:4px">
+          <label for="cert-pdf-url">Certificate PDF Link <span style="font-weight:400;color:var(--text-muted);font-size:.8rem">(optional — use if you have a PDF instead of an image)</span></label>
+          <input type="url" id="cert-pdf-url" placeholder="https://drive.google.com/file/d/..." />
+          <small>Upload PDF to Google Drive → Share → "Anyone with link" → Copy link → Paste here.</small>
+        </div>
         <div class="form-group">
           <label for="cert-date">Issue Date</label>
           <input type="month" id="cert-date" />

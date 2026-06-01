@@ -174,21 +174,33 @@ function loadCertsTable(db) {
 
 function buildCertRow(c, db) {
   const tr = document.createElement('tr');
+
+  // View cell: image button, PDF link, or dash
+  let viewCell;
+  if (c.imageURL) {
+    viewCell = `<button class="link-more view-img-btn" style="font-size:.82rem;background:none;border:none;padding:0;cursor:pointer">View Image</button>`;
+  } else if (c.pdfURL) {
+    viewCell = `<a href="${safe(c.pdfURL)}" target="_blank" rel="noopener" class="link-more" style="font-size:.82rem">View PDF ↗</a>`;
+  } else {
+    viewCell = `<span style="color:var(--text-muted);font-size:.82rem">—</span>`;
+  }
+
   tr.innerHTML = `
     <td><strong>${safe(c.title) || 'Untitled'}</strong></td>
     <td>${c.date ? safe(formatMonth(c.date)) : '—'}</td>
-    <td><button class="link-more view-img-btn" style="font-size:.82rem;background:none;border:none;padding:0;cursor:pointer">View Image</button></td>
+    <td>${viewCell}</td>
     <td>
       <button class="action-btn edit-cert-btn">Edit</button>
       <button class="action-btn delete del-cert-btn">Delete</button>
     </td>`;
 
-  tr.querySelector('.view-img-btn').addEventListener('click', () => {
-    if (!c.imageURL) { alert('No image saved for this certificate.'); return; }
-    const w = window.open('', '_blank');
-    w.document.write(`<!DOCTYPE html><html><body style="margin:0;background:#111;display:flex;align-items:center;justify-content:center;min-height:100vh"><img src="${c.imageURL}" style="max-width:100%;max-height:100vh;object-fit:contain"/></body></html>`);
-    w.document.close();
-  });
+  if (c.imageURL) {
+    tr.querySelector('.view-img-btn').addEventListener('click', () => {
+      const w = window.open('', '_blank');
+      w.document.write(`<!DOCTYPE html><html><body style="margin:0;background:#111;display:flex;align-items:center;justify-content:center;min-height:100vh"><img src="${c.imageURL}" style="max-width:100%;max-height:100vh;object-fit:contain"/></body></html>`);
+      w.document.close();
+    });
+  }
 
   tr.querySelector('.edit-cert-btn').addEventListener('click', () => openCertModal(c.id, c));
 
@@ -284,6 +296,8 @@ function openCertModal(docId, data) {
   $('#cert-title').value       = data?.title || '';
   $('#cert-date').value        = data?.date || '';
   $('#cert-description').value = data?.description || '';
+  const pdfEl = $('#cert-pdf-url');
+  if (pdfEl) pdfEl.value = data?.pdfURL || '';
 
   // Reset file input
   const fileInput = $('#cert-file-input');
@@ -318,13 +332,18 @@ function closeCertModal() {
 function saveCert(db) {
   const docId    = $('#cert-doc-id').value;
   const imageURL = certBase64 || certEditExistingImage;
+  const pdfURL   = $('#cert-pdf-url')?.value.trim() || '';
 
   if (!$('#cert-title').value.trim()) { alert('Certificate title is required.'); return; }
-  if (!imageURL) { alert('Please choose a certificate image.'); return; }
+  if (!imageURL && !pdfURL) {
+    alert('Please upload a certificate image OR paste a PDF link (Google Drive).');
+    return;
+  }
 
   const data = {
     title:       $('#cert-title').value.trim(),
-    imageURL,
+    imageURL:    imageURL || '',
+    pdfURL:      pdfURL,
     date:        $('#cert-date').value,
     description: $('#cert-description').value.trim()
   };
