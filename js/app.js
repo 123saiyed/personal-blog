@@ -48,6 +48,9 @@ function createPostCard(post, id) {
       <span class="post-date">${formatDate(post.dateTimestamp)}</span>
       <span class="post-read-more">Read more &rarr;</span>
     </div>`;
+  card.addEventListener('click', () => {
+    location.href = 'post.html?id=' + encodeURIComponent(id);
+  });
   return card;
 }
 
@@ -114,6 +117,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (!path || path === 'index.html')    waitForFirebase(initHome);
   else if (path === 'blog.html')         waitForFirebase(initBlog);
   else if (path === 'certificates.html') waitForFirebase(initCerts);
+  else if (path === 'post.html')         waitForFirebase(initPost);
 });
 
 /* ============================================================
@@ -269,3 +273,50 @@ function initCerts() {
     .catch(() => { container.innerHTML = '<p style="color:var(--text-muted);padding:32px 0">Could not load certificates.</p>'; });
 }
 
+/* ============================================================
+   POST DETAIL PAGE
+   ============================================================ */
+function initPost() {
+  const postId = new URLSearchParams(location.search).get('id');
+  if (!postId) { showPostError(); return; }
+
+  getDB().ref('posts/' + postId).once('value')
+    .then(snap => {
+      if (!snap.exists()) { showPostError(); return; }
+      const p = snap.val();
+      if (!p.published) { showPostError(); return; }
+
+      // Update page title
+      document.title = (p.title || 'Post') + ' — Ajamali Saiyad';
+
+      // Featured image
+      if (p.imageURL) {
+        const wrap = $('#post-featured-img-wrap');
+        const img  = $('#post-featured-img');
+        if (img)  { img.src = p.imageURL; img.alt = p.title || ''; }
+        if (wrap) wrap.style.display = 'block';
+      }
+
+      // Header
+      const catEl = $('#post-cat-badge');
+      if (catEl) catEl.textContent = p.category || 'Update';
+      const titleEl = $('#post-article-title');
+      if (titleEl) titleEl.textContent = p.title || 'Untitled';
+      const dateEl = $('#post-article-date');
+      if (dateEl) dateEl.textContent = formatDate(p.dateTimestamp);
+
+      // Content — rendered as HTML (admin-authored content)
+      const contentEl = $('#post-article-content');
+      if (contentEl) contentEl.innerHTML = p.content || '';
+
+      // Show article
+      $('#post-loading')?.classList.add('hidden');
+      $('#post-article')?.classList.remove('hidden');
+    })
+    .catch(() => showPostError());
+}
+
+function showPostError() {
+  $('#post-loading')?.classList.add('hidden');
+  $('#post-error')?.classList.remove('hidden');
+}

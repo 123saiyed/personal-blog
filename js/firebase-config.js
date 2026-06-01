@@ -26,9 +26,9 @@
         ".read": true,
         ".write": "auth != null"
       },
-      "inquiries": {
-        ".read": "auth != null",
-        ".write": true
+      "profile": {
+        ".read": true,
+        ".write": "auth != null"
       }
     }
   }

@@ -610,7 +610,25 @@ function initPostEditor() {
     reader.readAsDataURL(file);
   });
 
-  $('#post-form')?.addEventListener('submit', e => { e.preventDefault(); savePost(db, editId); });
+  // Warn before leaving with unsaved content
+  let postDirty = false;
+  const markDirty = () => { postDirty = true; };
+  $('#post-title')?.addEventListener('input', markDirty);
+  $('#post-content')?.addEventListener('input', markDirty);
+  $('#post-excerpt')?.addEventListener('input', markDirty);
+
+  window.addEventListener('beforeunload', e => {
+    if (postDirty) {
+      e.preventDefault();
+      e.returnValue = '';
+    }
+  });
+
+  $('#post-form')?.addEventListener('submit', e => {
+    e.preventDefault();
+    postDirty = false; // allow navigation after save
+    savePost(db, editId);
+  });
 }
 
 function updatePublishLabel(pub) {
@@ -651,12 +669,7 @@ function savePost(db, editId) {
 
   op.then(() => {
     showToast(editId ? 'Post updated!' : 'Post saved!');
-    if (!editId) {
-      $('#post-title').value      = '';
-      $('#post-content').innerHTML = '';
-      $('#post-excerpt').value    = '';
-      updateExcerptCount();
-    }
+    setTimeout(() => { location.href = 'dashboard.html'; }, 900);
   }).catch(err => {
     console.error(err);
     alert('Error saving post. Check the console.');
