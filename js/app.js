@@ -36,11 +36,7 @@ function createPostCard(post, id) {
   card.dataset.id       = id;
   card.dataset.category = post.category || 'update';
   card.dataset.title    = (post.title || '').toLowerCase();
-  const imgHTML = post.imageURL
-    ? `<div class="post-card-img"><img src="${safe(post.imageURL)}" alt="${safe(post.title)}" loading="lazy" onerror="this.parentElement.style.display='none'" /></div>`
-    : '';
   card.innerHTML = `
-    ${imgHTML}
     <span class="post-category">${safe(post.category) || 'Update'}</span>
     <h3 class="post-title">${safe(post.title) || 'Untitled'}</h3>
     <p class="post-excerpt">${safe(post.excerpt)}</p>
@@ -288,14 +284,6 @@ function initPost() {
 
       // Update page title
       document.title = (p.title || 'Post') + ' — Ajamali Saiyad';
-
-      // Featured image
-      if (p.imageURL) {
-        const wrap = $('#post-featured-img-wrap');
-        const img  = $('#post-featured-img');
-        if (img)  { img.src = p.imageURL; img.alt = p.title || ''; }
-        if (wrap) wrap.style.display = 'block';
-      }
 
       // Header
       const catEl = $('#post-cat-badge');
