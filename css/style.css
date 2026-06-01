@@ -203,36 +203,6 @@ button { cursor: pointer; font-family: inherit; }
 .about-card p  { color: var(--text-muted); font-size: .93rem; line-height: 1.65; }
 
 /* ============================================================
-   POSTS GRID
-   ============================================================ */
-.posts-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 24px;
-}
-.post-card {
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  padding: 24px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  transition: box-shadow .2s, transform .2s;
-  cursor: pointer;
-  overflow: hidden;
-}
-.post-card:hover  { box-shadow: var(--shadow-md); transform: translateY(-2px); }
-.post-card.skeleton { height: 180px; }
-
-.post-category { font-size: .75rem; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: var(--blue); }
-.post-title    { font-size: 1.05rem; font-weight: 600; line-height: 1.4; color: var(--text); }
-.post-excerpt  { font-size: .9rem; color: var(--text-muted); line-height: 1.6; flex: 1; }
-.post-meta     { display: flex; align-items: center; justify-content: space-between; margin-top: 8px; }
-.post-date     { font-size: .8rem; color: var(--text-muted); }
-.post-read-more { font-size: .82rem; font-weight: 600; color: var(--blue); }
-
-/* ============================================================
    CERTS TEASER (home)
    ============================================================ */
 .certs-row {
@@ -255,126 +225,11 @@ button { cursor: pointer; font-family: inherit; }
 .cert-thumb.skeleton { background: #F3F4F6; animation: shimmer 1.4s infinite; }
 
 /* ============================================================
-   CTA BANNER
-   ============================================================ */
-.cta-banner { background: var(--blue); color: #fff; padding: 64px 0; }
-.cta-inner  { display: flex; align-items: center; justify-content: space-between; gap: 32px; flex-wrap: wrap; }
-.cta-banner h2 { font-size: 1.6rem; margin-bottom: 8px; }
-.cta-banner p  { opacity: .85; }
-.cta-banner .btn-primary { background: #fff; color: var(--blue); flex-shrink: 0; }
-.cta-banner .btn-primary:hover { background: var(--blue-light); }
-
-/* ============================================================
    PAGE HEADER (inner pages)
    ============================================================ */
 .page-header { background: var(--bg-alt); border-bottom: 1px solid var(--border); padding: 48px 0 40px; }
 .page-header h1 { font-size: 2.25rem; font-weight: 700; margin-bottom: 10px; }
 .page-header p  { color: var(--text-muted); max-width: 560px; }
-
-/* ============================================================
-   BLOG CONTROLS
-   ============================================================ */
-.blog-controls { display: flex; flex-wrap: wrap; gap: 16px; align-items: center; margin-bottom: 36px; }
-.search-wrap   { position: relative; flex: 1; min-width: 220px; }
-.search-input  {
-  width: 100%;
-  padding: 10px 16px 10px 40px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  font-family: inherit;
-  font-size: .95rem;
-  color: var(--text);
-  background: var(--bg);
-  transition: border-color .2s, box-shadow .2s;
-}
-.search-input:focus { outline: none; border-color: var(--blue); box-shadow: 0 0 0 3px rgba(37,99,235,.12); }
-.search-icon  { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); pointer-events: none; }
-
-.filter-wrap  { display: flex; gap: 8px; flex-wrap: wrap; }
-.filter-btn   {
-  padding: 8px 16px;
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  font-size: .85rem;
-  font-weight: 500;
-  background: var(--bg);
-  color: var(--text-muted);
-  transition: all .15s;
-}
-.filter-btn:hover  { border-color: var(--blue); color: var(--blue); }
-.filter-btn.active { background: var(--blue); border-color: var(--blue); color: #fff; }
-
-.load-more-wrap { text-align: center; margin-top: 40px; }
-
-/* ============================================================
-   POST DETAIL PAGE
-   ============================================================ */
-.post-page { padding: 48px 0 80px; }
-
-.post-loading { max-width: 760px; margin: 0 auto; }
-.post-skeleton-title { height: 48px; border-radius: 8px; margin-bottom: 16px; }
-.post-skeleton-meta  { height: 20px; width: 40%; border-radius: 6px; margin-bottom: 36px; }
-.post-skeleton-body  { height: 320px; border-radius: 8px; }
-
-.post-article { max-width: 760px; margin: 0 auto; }
-.post-back-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-size: .88rem;
-  font-weight: 500;
-  color: var(--text-muted);
-  margin-bottom: 28px;
-  text-decoration: none;
-  transition: color .15s;
-}
-.post-back-link:hover { color: var(--blue); text-decoration: none; }
-
-.post-article-header { margin-bottom: 32px; }
-.post-article-header .badge { margin-bottom: 14px; }
-.post-article-header h1 {
-  font-size: 2.2rem;
-  font-weight: 700;
-  line-height: 1.25;
-  margin-bottom: 16px;
-  color: var(--text);
-}
-.post-article-meta {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  font-size: .88rem;
-  color: var(--text-muted);
-  border-top: 1px solid var(--border);
-  padding-top: 16px;
-}
-.post-article-author { font-weight: 500; color: var(--text); }
-
-.post-article-content {
-  font-size: 1.02rem;
-  line-height: 1.85;
-  color: var(--text);
-  border-top: 1px solid var(--border);
-  padding-top: 32px;
-}
-.post-article-content h1,
-.post-article-content h2,
-.post-article-content h3 { margin: 28px 0 12px; font-weight: 600; }
-.post-article-content p   { margin-bottom: 18px; }
-.post-article-content ul,
-.post-article-content ol  { margin: 0 0 18px 24px; }
-.post-article-content li  { margin-bottom: 6px; }
-.post-article-content img { max-width: 100%; border-radius: 8px; margin: 16px 0; }
-.post-article-content a   { color: var(--blue); text-decoration: underline; }
-.post-article-content strong { font-weight: 600; }
-
-@media (max-width: 768px) {
-  .post-article-header h1 { font-size: 1.7rem; }
-  .post-page { padding: 32px 0 60px; }
-}
-@media (max-width: 480px) {
-  .post-article-header h1 { font-size: 1.45rem; }
-}
 
 /* ============================================================
    CERTIFICATES GALLERY
@@ -690,18 +545,20 @@ small { font-size: .8rem; color: var(--text-muted); }
 
 /* Action buttons in table */
 .action-btn {
-  padding: 5px 12px;
-  font-size: .8rem;
+  padding: 6px 14px;
+  font-size: .82rem;
   border-radius: var(--radius);
   border: 1px solid var(--border);
   background: var(--bg);
   color: var(--text);
-  font-weight: 500;
-  margin-right: 4px;
+  font-weight: 600;
+  margin-right: 6px;
   transition: all .15s;
+  cursor: pointer;
 }
-.action-btn:hover { border-color: var(--blue); color: var(--blue); }
-.action-btn.delete:hover { border-color: #EF4444; color: #EF4444; }
+.action-btn:hover { border-color: var(--blue); color: var(--blue); background: var(--blue-light); }
+.action-btn.delete { color: #B91C1C; border-color: #FECACA; background: #FFF5F5; }
+.action-btn.delete:hover { border-color: #EF4444; color: #fff; background: #EF4444; }
 
 /* Login screen */
 .login-screen {
@@ -724,86 +581,6 @@ small { font-size: .8rem; color: var(--text-muted); }
 .login-logo { font-size: 1.4rem; font-weight: 700; margin-bottom: 4px; text-align: center; }
 .login-sub  { font-size: .9rem; color: var(--text-muted); text-align: center; margin-bottom: 28px; }
 .login-error { font-size: .85rem; color: #EF4444; background: #FEF2F2; padding: 10px 14px; border-radius: var(--radius); margin-bottom: 16px; }
-
-/* ============================================================
-   ADMIN — POST EDITOR
-   ============================================================ */
-.post-editor { padding: 24px 28px; }
-.post-editor form { display: grid; grid-template-columns: 1fr 280px; gap: 24px; align-items: start; }
-.editor-main { display: flex; flex-direction: column; gap: 0; }
-
-.post-title-input {
-  width: 100%;
-  font-size: 1.6rem;
-  font-weight: 700;
-  border: none;
-  border-bottom: 2px solid var(--border);
-  border-radius: 0;
-  padding: 10px 0;
-  margin-bottom: 16px;
-  color: var(--text);
-  background: transparent;
-}
-.post-title-input:focus { outline: none; border-bottom-color: var(--blue); box-shadow: none; }
-.post-title-input::placeholder { color: #D1D5DB; }
-
-.editor-toolbar {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  padding: 8px 12px;
-  background: var(--bg-alt);
-  border: 1px solid var(--border);
-  border-bottom: none;
-  border-radius: var(--radius) var(--radius) 0 0;
-}
-.toolbar-btn {
-  padding: 5px 10px;
-  background: none;
-  border: none;
-  border-radius: 4px;
-  font-size: .87rem;
-  color: var(--text-muted);
-  transition: background .15s, color .15s;
-}
-.toolbar-btn:hover { background: var(--border); color: var(--text); }
-.toolbar-sep { width: 1px; height: 18px; background: var(--border); margin: 0 4px; }
-
-.post-content-editor {
-  min-height: 420px;
-  border: 1px solid var(--border);
-  border-radius: 0 0 var(--radius) var(--radius);
-  padding: 16px 20px;
-  font-size: .97rem;
-  line-height: 1.75;
-  color: var(--text);
-  background: var(--bg);
-  overflow-y: auto;
-}
-.post-content-editor:focus { outline: none; }
-.post-content-editor:empty::before {
-  content: attr(data-placeholder);
-  color: #D1D5DB;
-  pointer-events: none;
-}
-.post-content-editor img {
-  max-width: 100%;
-  border-radius: 8px;
-  margin: 12px 0;
-  display: block;
-  cursor: pointer;
-}
-
-.editor-sidebar { display: flex; flex-direction: column; gap: 16px; }
-.editor-panel {
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  padding: 20px;
-}
-.editor-panel h4 { font-size: .9rem; font-weight: 600; margin-bottom: 16px; text-transform: uppercase; letter-spacing: .04em; color: var(--text-muted); }
-.editor-actions { display: flex; flex-direction: column; gap: 10px; margin-top: 16px; }
-#excerpt-count { text-align: right; }
 
 /* Toast */
 .toast {
@@ -980,14 +757,11 @@ small { font-size: .8rem; color: var(--text-muted); }
 
 /* --- Tablet: 1024px --- */
 @media (max-width: 1024px) {
-  .posts-grid  { grid-template-columns: repeat(2, 1fr); }
   .certs-grid  { grid-template-columns: repeat(2, 1fr); }
   .about-grid  { grid-template-columns: repeat(2, 1fr); }
-  .stats-row   { grid-template-columns: repeat(3, 1fr); padding: 20px 20px 0; }
+  .stats-row   { grid-template-columns: repeat(2, 1fr); padding: 20px 20px 0; }
   .quick-actions { padding: 16px 20px; flex-wrap: wrap; }
   .admin-section { padding: 0 20px 28px; }
-  .post-editor   { padding: 20px; }
-  .post-editor form { grid-template-columns: 1fr 260px; }
 }
 
 /* --- Mobile: 768px --- */
@@ -1027,10 +801,7 @@ small { font-size: .8rem; color: var(--text-muted); }
   .section  { padding: 48px 0; }
   .section-title { font-size: 1.5rem; }
   .about-grid  { grid-template-columns: 1fr; }
-  .posts-grid  { grid-template-columns: 1fr; }
   .certs-grid  { grid-template-columns: repeat(2, 1fr); }
-  .inquiry-form .form-row { grid-template-columns: 1fr; }
-  .cta-inner   { flex-direction: column; text-align: center; }
 
   /* Page header */
   .page-header { padding: 36px 0 28px; }
@@ -1074,11 +845,6 @@ small { font-size: .8rem; color: var(--text-muted); }
   .admin-section { padding: 0 16px 24px; }
   .admin-topbar  { padding: 0 16px; }
 
-  /* Post editor stacks */
-  .post-editor { padding: 16px; }
-  .post-editor form { grid-template-columns: 1fr; }
-  .editor-sidebar { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-
   /* Modal full width */
   .modal { padding: 16px; align-items: flex-end; }
   .modal-card { max-width: 100%; border-radius: var(--radius-lg) var(--radius-lg) 0 0; max-height: 90vh; overflow-y: auto; }
@@ -1108,16 +874,10 @@ small { font-size: .8rem; color: var(--text-muted); }
   .stats-row  { grid-template-columns: 1fr 1fr; gap: 10px; }
   .stat-num   { font-size: 1.6rem; }
 
-  .editor-sidebar { grid-template-columns: 1fr; }
-  .editor-toolbar { flex-wrap: wrap; gap: 2px; }
-
   .modal { padding: 0; }
   .modal-card { border-radius: var(--radius-lg) var(--radius-lg) 0 0; }
 
   .login-card { padding: 28px 20px; }
-
-  .post-title-input { font-size: 1.3rem; }
-  .post-content-editor { min-height: 280px; }
 
   /* Certs teaser thumbnails */
   .cert-thumb { width: 160px; height: 110px; }

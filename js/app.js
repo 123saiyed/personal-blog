@@ -6,10 +6,6 @@
 const $  = (sel, ctx = document) => ctx.querySelector(sel);
 const $$ = (sel, ctx = document) => [...ctx.querySelectorAll(sel)];
 
-function formatDate(ts) {
-  if (!ts) return '';
-  return new Date(ts).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
-}
 function formatMonth(str) {
   if (!str) return '';
   const [y, m] = str.split('-');
