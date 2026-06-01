@@ -248,10 +248,11 @@
           <input type="text" id="cert-title" placeholder="e.g. AWS Certified Developer" required />
         </div>
         <div class="form-group">
-          <label for="cert-file-input">Certificate Image <span class="required">*</span></label>
+          <label for="cert-file-input" id="cert-img-label">Certificate Image <span class="required">*</span></label>
           <input type="file" id="cert-file-input" accept="image/*"
                  style="display:block;width:100%;padding:8px;border:2px dashed var(--blue);border-radius:8px;cursor:pointer;background:#f0f7ff;font-size:.9rem;" />
-          <small>Select a JPG or PNG of your certificate. Max 4 MB.</small>
+          <small id="cert-img-small">Select a JPG or PNG of your certificate. Max 6 MB.</small>
+          <p id="cert-img-status" style="font-size:.85rem;margin-top:4px"></p>
           <p id="cert-file-error" style="color:#dc2626;font-size:.85rem;display:none;margin-top:4px"></p>
         </div>
         <div id="cert-img-preview-wrap" style="display:none;text-align:center;margin-bottom:8px">

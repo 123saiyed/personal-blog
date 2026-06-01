@@ -139,22 +139,37 @@ function loadStats(db) {
 }
 
 /* ============================================================
-   CERTIFICATES TABLE
+   CERTIFICATES TABLE — real-time listener, always in sync
    ============================================================ */
+let _certsListenerOff = null;
+
 function loadCertsTable(db) {
   const tbody = $('#certs-tbody');
   if (!tbody) return;
 
-  db.ref('certificates').once('value').then(snap => {
+  // Remove any previous listener before attaching a new one
+  if (_certsListenerOff) { _certsListenerOff(); _certsListenerOff = null; }
+
+  tbody.innerHTML = '<tr><td colspan="4" class="table-loading">Loading...</td></tr>';
+
+  const ref = db.ref('certificates');
+  const handler = snap => {
     tbody.innerHTML = '';
-    if (!snap.exists()) {
-      tbody.innerHTML = '<tr><td colspan="4" class="table-loading">No certificates yet.</td></tr>';
+    if (!snap.exists() || snap.numChildren() === 0) {
+      tbody.innerHTML = '<tr><td colspan="4" class="table-loading">No certificates yet. Click "+ Add Certificate" to add one.</td></tr>';
       return;
     }
     const rows = [];
     snap.forEach(child => rows.push({ id: child.key, ...child.val() }));
     rows.reverse().forEach(c => tbody.appendChild(buildCertRow(c, db)));
-  });
+  };
+  const errHandler = err => {
+    console.error('Certs load error:', err);
+    tbody.innerHTML = '<tr><td colspan="4" class="table-loading" style="color:#dc2626">Could not load certificates — check Firebase rules.</td></tr>';
+  };
+
+  ref.on('value', handler, errHandler);
+  _certsListenerOff = () => ref.off('value', handler);
 }
 
 function buildCertRow(c, db) {
@@ -162,16 +177,26 @@ function buildCertRow(c, db) {
   tr.innerHTML = `
     <td><strong>${safe(c.title) || 'Untitled'}</strong></td>
     <td>${c.date ? safe(formatMonth(c.date)) : '—'}</td>
-    <td><a href="${safe(c.imageURL) || '#'}" target="_blank" class="link-more" style="font-size:.82rem">View Image</a></td>
+    <td><button class="link-more view-img-btn" style="font-size:.82rem;background:none;border:none;padding:0;cursor:pointer">View Image</button></td>
     <td>
       <button class="action-btn edit-cert-btn">Edit</button>
       <button class="action-btn delete del-cert-btn">Delete</button>
     </td>`;
 
+  tr.querySelector('.view-img-btn').addEventListener('click', () => {
+    if (!c.imageURL) { alert('No image saved for this certificate.'); return; }
+    const w = window.open('', '_blank');
+    w.document.write(`<!DOCTYPE html><html><body style="margin:0;background:#111;display:flex;align-items:center;justify-content:center;min-height:100vh"><img src="${c.imageURL}" style="max-width:100%;max-height:100vh;object-fit:contain"/></body></html>`);
+    w.document.close();
+  });
+
   tr.querySelector('.edit-cert-btn').addEventListener('click', () => openCertModal(c.id, c));
+
   tr.querySelector('.del-cert-btn').addEventListener('click', () => {
-    if (!confirm(`Delete "${c.title}"?`)) return;
-    db.ref('certificates/' + c.id).remove().then(() => { tr.remove(); loadStats(db); });
+    if (!confirm(`Delete "${c.title}"?\nThis cannot be undone.`)) return;
+    db.ref('certificates/' + c.id).remove()
+      .then(() => loadStats(db))
+      .catch(() => alert('Error deleting. Check Firebase rules.'));
   });
   return tr;
 }
@@ -215,6 +240,11 @@ function bindCertModal(db) {
         certBase64 = canvas.toDataURL('image/jpeg', 0.85);
         if (prev) prev.src = certBase64;
         if (wrap) wrap.style.display = 'block';
+        const statusEl = $('#cert-img-status');
+        if (statusEl) {
+          statusEl.textContent = '✓ Image ready — click "Save Certificate" below to save.';
+          statusEl.style.color = '#16a34a';
+        }
       };
       img.src = ev.target.result;
     };
@@ -227,14 +257,35 @@ function bindCertModal(db) {
 function openCertModal(docId, data) {
   certBase64 = null;
   certEditExistingImage = data?.imageURL || null;
+  const isEdit = !!docId;
 
+  // Modal title
   const titleEl = $('#cert-modal-title');
-  if (titleEl) titleEl.textContent = docId ? 'Edit Certificate' : 'Add Certificate';
+  if (titleEl) titleEl.textContent = isEdit ? 'Edit Certificate' : 'Add Certificate';
+
+  // Image field: different label + hint for edit vs add
+  const imgLabel = $('#cert-img-label');
+  const imgSmall = $('#cert-img-small');
+  const statusEl = $('#cert-img-status');
+  if (imgLabel) {
+    imgLabel.innerHTML = isEdit
+      ? 'Update Image <span style="font-weight:400;color:var(--text-muted);font-size:.8rem">(optional — existing image kept if you do not choose a new one)</span>'
+      : 'Certificate Image <span class="required">*</span>';
+  }
+  if (imgSmall) {
+    imgSmall.textContent = isEdit
+      ? 'Choose a new image only if you want to replace the current one.'
+      : 'Select a JPG or PNG of your certificate. Max 6 MB.';
+  }
+  if (statusEl) { statusEl.textContent = ''; statusEl.style.color = ''; }
+
+  // Form fields
   $('#cert-doc-id').value      = docId || '';
   $('#cert-title').value       = data?.title || '';
   $('#cert-date').value        = data?.date || '';
   $('#cert-description').value = data?.description || '';
 
+  // Reset file input
   const fileInput = $('#cert-file-input');
   const errEl     = $('#cert-file-error');
   const wrap      = $('#cert-img-preview-wrap');
@@ -242,11 +293,13 @@ function openCertModal(docId, data) {
   if (fileInput) fileInput.value = '';
   if (errEl)     errEl.style.display = 'none';
 
-  if (data?.imageURL) {
+  // Show existing image when editing
+  if (isEdit && data?.imageURL) {
     if (prev) prev.src = data.imageURL;
     if (wrap) wrap.style.display = 'block';
   } else {
     if (wrap) wrap.style.display = 'none';
+    if (prev) prev.src = '';
   }
 
   $('#cert-modal')?.classList.remove('hidden');
@@ -286,9 +339,9 @@ function saveCert(db) {
 
   op.then(() => {
     closeCertModal();
-    loadCertsTable(db);
     loadStats(db);
     showToast('Certificate saved!');
+    // Table auto-updates via real-time listener — no manual reload needed
   }).catch(err => {
     console.error(err);
     alert('Error saving. Check Firebase rules.');
