@@ -51,9 +51,6 @@
         <a href="dashboard.html#certs" class="sidebar-link">
           <span class="sidebar-icon">&#127942;</span> Certificates
         </a>
-        <a href="dashboard.html#inquiries" class="sidebar-link">
-          <span class="sidebar-icon">&#128140;</span> Inquiries
-        </a>
       </nav>
       <div class="sidebar-footer">
         <a href="../index.html" class="sidebar-link">&#127968; View Site</a>
@@ -114,6 +111,22 @@
                 </button>
                 <a href="dashboard.html" class="btn-secondary btn-full">Cancel</a>
               </div>
+            </div>
+
+            <div class="editor-panel">
+              <h4>Featured Image</h4>
+              <div id="post-img-preview-wrap" style="display:none;margin-bottom:10px">
+                <img id="post-img-preview" src="" alt="Preview"
+                     style="width:100%;border-radius:8px;object-fit:cover;max-height:140px;border:1px solid var(--border);" />
+              </div>
+              <div class="form-group">
+                <input type="file" id="post-img-file" accept="image/*"
+                       style="display:block;width:100%;padding:8px;border:2px dashed var(--blue);border-radius:8px;cursor:pointer;background:#f0f7ff;font-size:.85rem;" />
+                <small>Choose a cover image for this post (JPG/PNG).</small>
+                <p id="post-img-error" style="color:#dc2626;font-size:.82rem;display:none;margin-top:4px"></p>
+              </div>
+              <button type="button" id="post-img-remove" class="btn-secondary btn-full"
+                      style="display:none;font-size:.82rem;padding:6px 0">&#x2715; Remove Image</button>
             </div>
 
             <div class="editor-panel">

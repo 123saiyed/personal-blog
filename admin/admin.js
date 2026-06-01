@@ -435,6 +435,9 @@ function saveCert(db) {
 /* ============================================================
    POST EDITOR
    ============================================================ */
+let postImageBase64    = null;
+let postImageExisting  = null;
+
 function initPostEditor() {
   const db     = getDB();
   const editId = new URLSearchParams(location.search).get('id');
@@ -453,13 +456,72 @@ function initPostEditor() {
       const catEl = $('#post-category');
       const pubEl = $('#post-published');
       const excEl = $('#post-excerpt');
-      if (catEl) catEl.value    = p.category || 'update';
-      if (pubEl) pubEl.checked  = !!p.published;
-      if (excEl) excEl.value    = p.excerpt || '';
+      if (catEl) catEl.value   = p.category || 'update';
+      if (pubEl) pubEl.checked = !!p.published;
+      if (excEl) excEl.value   = p.excerpt || '';
       updatePublishLabel(!!p.published);
       updateExcerptCount();
+
+      // Load existing featured image
+      if (p.imageURL) {
+        postImageExisting = p.imageURL;
+        const prev = $('#post-img-preview');
+        const wrap = $('#post-img-preview-wrap');
+        const rmBtn = $('#post-img-remove');
+        if (prev)  { prev.src = p.imageURL; }
+        if (wrap)  { wrap.style.display = 'block'; }
+        if (rmBtn) { rmBtn.style.display = 'block'; }
+      }
     });
   }
+
+  // File chosen
+  $('#post-img-file')?.addEventListener('change', e => {
+    const file   = e.target.files[0];
+    const errEl  = $('#post-img-error');
+    const wrap   = $('#post-img-preview-wrap');
+    const prev   = $('#post-img-preview');
+    const rmBtn  = $('#post-img-remove');
+    if (errEl) errEl.style.display = 'none';
+    postImageBase64 = null;
+
+    if (!file) return;
+    if (file.size > 6 * 1024 * 1024) {
+      if (errEl) { errEl.textContent = 'File too large. Please choose an image under 6 MB.'; errEl.style.display = 'block'; }
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = ev => {
+      const img = new Image();
+      img.onload = () => {
+        const MAX = 1200;
+        let w = img.width, h = img.height;
+        if (w > MAX) { h = Math.round(h * MAX / w); w = MAX; }
+        if (h > MAX) { w = Math.round(w * MAX / h); h = MAX; }
+        const canvas = document.createElement('canvas');
+        canvas.width = w; canvas.height = h;
+        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+        postImageBase64 = canvas.toDataURL('image/jpeg', 0.85);
+        if (prev)  { prev.src = postImageBase64; }
+        if (wrap)  { wrap.style.display = 'block'; }
+        if (rmBtn) { rmBtn.style.display = 'block'; }
+      };
+      img.src = ev.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+
+  // Remove image
+  $('#post-img-remove')?.addEventListener('click', () => {
+    postImageBase64   = null;
+    postImageExisting = null;
+    const fileInput = $('#post-img-file');
+    const wrap      = $('#post-img-preview-wrap');
+    const rmBtn     = $('#post-img-remove');
+    if (fileInput) fileInput.value = '';
+    if (wrap)      wrap.style.display = 'none';
+    if (rmBtn)     rmBtn.style.display = 'none';
+  });
 
   $('#post-published')?.addEventListener('change', e => updatePublishLabel(e.target.checked));
   $('#post-excerpt')?.addEventListener('input', updateExcerptCount);
@@ -508,6 +570,7 @@ function savePost(db, editId) {
     category:       $('#post-category')?.value || 'update',
     published:      $('#post-published')?.checked || false,
     excerpt:        $('#post-excerpt')?.value.trim() || '',
+    imageURL:       postImageBase64 || postImageExisting || '',
     dateTimestamp:  Date.now()
   };
 
