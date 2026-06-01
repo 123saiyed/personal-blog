@@ -248,16 +248,23 @@
           <input type="text" id="cert-title" placeholder="e.g. AWS Certified Developer" required />
         </div>
         <div class="form-group">
-          <label for="cert-file-input" id="cert-img-label">Certificate Image <span class="required">*</span></label>
-          <input type="file" id="cert-file-input" accept="image/*"
+          <label for="cert-file-input" id="cert-img-label">Certificate Image or PDF <span class="required">*</span></label>
+          <input type="file" id="cert-file-input" accept="image/*,.pdf"
                  style="display:block;width:100%;padding:8px;border:2px dashed var(--blue);border-radius:8px;cursor:pointer;background:#f0f7ff;font-size:.9rem;" />
-          <small id="cert-img-small">Select a JPG or PNG of your certificate. Max 6 MB.</small>
+          <small id="cert-img-small">Upload a JPG/PNG image or a PDF file. Max 6 MB for images, 5 MB for PDF.</small>
           <p id="cert-img-status" style="font-size:.85rem;margin-top:4px"></p>
           <p id="cert-file-error" style="color:#dc2626;font-size:.85rem;display:none;margin-top:4px"></p>
         </div>
         <div id="cert-img-preview-wrap" style="display:none;text-align:center;margin-bottom:8px">
           <img id="cert-img-preview" src="" alt="Preview"
                style="max-width:100%;max-height:160px;border-radius:8px;border:1px solid #e5e7eb;object-fit:contain;" />
+        </div>
+        <div id="cert-pdf-preview" style="display:none;align-items:center;gap:12px;padding:12px 16px;background:#EFF6FF;border:1px solid #BFDBFE;border-radius:8px;margin-bottom:8px">
+          <span style="font-size:2rem;line-height:1">&#128196;</span>
+          <div>
+            <div class="pdf-fname" style="font-weight:600;font-size:.9rem;color:#1D4ED8;word-break:break-all"></div>
+            <div class="pdf-fsize" style="font-size:.8rem;color:var(--text-muted);margin-top:2px"></div>
+          </div>
         </div>
         <div class="form-group" style="margin-top:4px">
           <label for="cert-pdf-url">Certificate PDF Link <span style="font-weight:400;color:var(--text-muted);font-size:.8rem">(optional — use if you have a PDF instead of an image)</span></label>

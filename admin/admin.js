@@ -26,6 +26,19 @@ function showToast(msg) {
   setTimeout(() => t.classList.add('hidden'), 3000);
 }
 
+function openPdfBlob(base64data) {
+  try {
+    const b64 = base64data.includes(',') ? base64data.split(',')[1] : base64data;
+    const bytes = atob(b64);
+    const arr = new Uint8Array(bytes.length);
+    for (let i = 0; i < bytes.length; i++) arr[i] = bytes.charCodeAt(i);
+    const blob = new Blob([arr], { type: 'application/pdf' });
+    window.open(URL.createObjectURL(blob), '_blank');
+  } catch (e) {
+    alert('Could not open PDF. Please try again.');
+  }
+}
+
 /* ---------- wait for Firebase ---------- */
 function waitForFirebase(cb, tries = 0) {
   if (typeof firebase !== 'undefined' && firebase.apps?.length) cb();
@@ -175,10 +188,12 @@ function loadCertsTable(db) {
 function buildCertRow(c, db) {
   const tr = document.createElement('tr');
 
-  // View cell: image button, PDF link, or dash
+  // View cell
   let viewCell;
   if (c.imageURL) {
     viewCell = `<button class="link-more view-img-btn" style="font-size:.82rem;background:none;border:none;padding:0;cursor:pointer">View Image</button>`;
+  } else if (c.pdfData) {
+    viewCell = `<button class="link-more view-pdf-btn" style="font-size:.82rem;background:none;border:none;padding:0;cursor:pointer">View PDF</button>`;
   } else if (c.pdfURL) {
     viewCell = `<a href="${safe(c.pdfURL)}" target="_blank" rel="noopener" class="link-more" style="font-size:.82rem">View PDF ↗</a>`;
   } else {
@@ -201,6 +216,9 @@ function buildCertRow(c, db) {
       w.document.close();
     });
   }
+  if (c.pdfData) {
+    tr.querySelector('.view-pdf-btn').addEventListener('click', () => openPdfBlob(c.pdfData));
+  }
 
   tr.querySelector('.edit-cert-btn').addEventListener('click', () => openCertModal(c.id, c));
 
@@ -216,8 +234,10 @@ function buildCertRow(c, db) {
 /* ============================================================
    CERTIFICATE MODAL
    ============================================================ */
-let certBase64 = null;
-let certEditExistingImage = null;
+let certBase64           = null;
+let certPdfData          = null;
+let certEditExistingImage   = null;
+let certEditExistingPdfData = null;
 
 function bindCertModal(db) {
   $('#add-cert-btn')?.addEventListener('click',  () => openCertModal(null, null));
@@ -227,38 +247,62 @@ function bindCertModal(db) {
   $('#cert-modal-overlay')?.addEventListener('click', closeCertModal);
 
   $('#cert-file-input')?.addEventListener('change', e => {
-    const file  = e.target.files[0];
-    const errEl = $('#cert-file-error');
-    const wrap  = $('#cert-img-preview-wrap');
-    const prev  = $('#cert-img-preview');
+    const file     = e.target.files[0];
+    const errEl    = $('#cert-file-error');
+    const wrap     = $('#cert-img-preview-wrap');
+    const prev     = $('#cert-img-preview');
+    const pdfPrev  = $('#cert-pdf-preview');
+    const statusEl = $('#cert-img-status');
+
     if (errEl) errEl.style.display = 'none';
-    certBase64 = null;
+    if (statusEl) { statusEl.textContent = ''; statusEl.style.color = ''; }
+    certBase64  = null;
+    certPdfData = null;
+    if (wrap)    wrap.style.display    = 'none';
+    if (pdfPrev) pdfPrev.style.display = 'none';
+
     if (!file) return;
-    if (file.size > 6 * 1024 * 1024) {
-      if (errEl) { errEl.textContent = 'File too large. Please choose an image under 6 MB.'; errEl.style.display = 'block'; }
+
+    const isPdf = file.type === 'application/pdf';
+    const maxMB = isPdf ? 5 : 6;
+    if (file.size > maxMB * 1024 * 1024) {
+      if (errEl) { errEl.textContent = `File too large. Max ${maxMB} MB.`; errEl.style.display = 'block'; }
       return;
     }
+
     const reader = new FileReader();
     reader.onload = ev => {
-      const img = new Image();
-      img.onload = () => {
-        const MAX = 1200;
-        let w = img.width, h = img.height;
-        if (w > MAX) { h = Math.round(h * MAX / w); w = MAX; }
-        if (h > MAX) { w = Math.round(w * MAX / h); h = MAX; }
-        const canvas = document.createElement('canvas');
-        canvas.width = w; canvas.height = h;
-        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-        certBase64 = canvas.toDataURL('image/jpeg', 0.85);
-        if (prev) prev.src = certBase64;
-        if (wrap) wrap.style.display = 'block';
-        const statusEl = $('#cert-img-status');
+      if (isPdf) {
+        certPdfData = ev.target.result;   // data:application/pdf;base64,...
+        if (pdfPrev) {
+          pdfPrev.querySelector('.pdf-fname').textContent = file.name;
+          pdfPrev.querySelector('.pdf-fsize').textContent = (file.size / 1024).toFixed(0) + ' KB';
+          pdfPrev.style.display = 'flex';
+        }
         if (statusEl) {
-          statusEl.textContent = '✓ Image ready — click "Save Certificate" below to save.';
+          statusEl.textContent = '✓ PDF ready — click "Save Certificate" to save.';
           statusEl.style.color = '#16a34a';
         }
-      };
-      img.src = ev.target.result;
+      } else {
+        const img = new Image();
+        img.onload = () => {
+          const MAX = 1200;
+          let w = img.width, h = img.height;
+          if (w > MAX) { h = Math.round(h * MAX / w); w = MAX; }
+          if (h > MAX) { w = Math.round(w * MAX / h); h = MAX; }
+          const canvas = document.createElement('canvas');
+          canvas.width = w; canvas.height = h;
+          canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+          certBase64 = canvas.toDataURL('image/jpeg', 0.85);
+          if (prev) prev.src = certBase64;
+          if (wrap) wrap.style.display = 'block';
+          if (statusEl) {
+            statusEl.textContent = '✓ Image ready — click "Save Certificate" to save.';
+            statusEl.style.color = '#16a34a';
+          }
+        };
+        img.src = ev.target.result;
+      }
     };
     reader.readAsDataURL(file);
   });
@@ -267,27 +311,29 @@ function bindCertModal(db) {
 }
 
 function openCertModal(docId, data) {
-  certBase64 = null;
-  certEditExistingImage = data?.imageURL || null;
+  certBase64              = null;
+  certPdfData             = null;
+  certEditExistingImage   = data?.imageURL  || null;
+  certEditExistingPdfData = data?.pdfData   || null;
   const isEdit = !!docId;
 
   // Modal title
   const titleEl = $('#cert-modal-title');
   if (titleEl) titleEl.textContent = isEdit ? 'Edit Certificate' : 'Add Certificate';
 
-  // Image field: different label + hint for edit vs add
+  // File field label + hint
   const imgLabel = $('#cert-img-label');
   const imgSmall = $('#cert-img-small');
   const statusEl = $('#cert-img-status');
   if (imgLabel) {
     imgLabel.innerHTML = isEdit
-      ? 'Update Image <span style="font-weight:400;color:var(--text-muted);font-size:.8rem">(optional — existing image kept if you do not choose a new one)</span>'
-      : 'Certificate Image <span class="required">*</span>';
+      ? 'Update File <span style="font-weight:400;color:var(--text-muted);font-size:.8rem">(optional — existing file kept if you do not choose a new one)</span>'
+      : 'Certificate Image or PDF <span class="required">*</span>';
   }
   if (imgSmall) {
     imgSmall.textContent = isEdit
-      ? 'Choose a new image only if you want to replace the current one.'
-      : 'Select a JPG or PNG of your certificate. Max 6 MB.';
+      ? 'Choose a new image or PDF only if you want to replace the current one.'
+      : 'Upload a JPG/PNG image or a PDF file. Max 6 MB for images, 5 MB for PDF.';
   }
   if (statusEl) { statusEl.textContent = ''; statusEl.style.color = ''; }
 
@@ -296,24 +342,33 @@ function openCertModal(docId, data) {
   $('#cert-title').value       = data?.title || '';
   $('#cert-date').value        = data?.date || '';
   $('#cert-description').value = data?.description || '';
-  const pdfEl = $('#cert-pdf-url');
-  if (pdfEl) pdfEl.value = data?.pdfURL || '';
+  const pdfUrlEl = $('#cert-pdf-url');
+  if (pdfUrlEl) pdfUrlEl.value = data?.pdfURL || '';
 
   // Reset file input
   const fileInput = $('#cert-file-input');
   const errEl     = $('#cert-file-error');
   const wrap      = $('#cert-img-preview-wrap');
   const prev      = $('#cert-img-preview');
+  const pdfPrev   = $('#cert-pdf-preview');
   if (fileInput) fileInput.value = '';
-  if (errEl)     errEl.style.display = 'none';
+  if (errEl)     errEl.style.display   = 'none';
+  if (pdfPrev)   pdfPrev.style.display = 'none';
 
-  // Show existing image when editing
+  // Show existing file preview when editing
   if (isEdit && data?.imageURL) {
     if (prev) prev.src = data.imageURL;
     if (wrap) wrap.style.display = 'block';
   } else {
     if (wrap) wrap.style.display = 'none';
     if (prev) prev.src = '';
+  }
+  if (isEdit && data?.pdfData && !data?.imageURL) {
+    if (pdfPrev) {
+      pdfPrev.querySelector('.pdf-fname').textContent = 'Existing PDF (saved)';
+      pdfPrev.querySelector('.pdf-fsize').textContent = 'Choose a new file to replace it';
+      pdfPrev.style.display = 'flex';
+    }
   }
 
   $('#cert-modal')?.classList.remove('hidden');
@@ -325,25 +380,29 @@ function closeCertModal() {
   $('#cert-modal')?.classList.add('hidden');
   $('#cert-modal-overlay')?.classList.add('hidden');
   document.body.style.overflow = '';
-  certBase64 = null;
-  certEditExistingImage = null;
+  certBase64              = null;
+  certPdfData             = null;
+  certEditExistingImage   = null;
+  certEditExistingPdfData = null;
 }
 
 function saveCert(db) {
   const docId    = $('#cert-doc-id').value;
-  const imageURL = certBase64 || certEditExistingImage;
+  const imageURL = certBase64              || certEditExistingImage   || '';
+  const pdfData  = certPdfData             || certEditExistingPdfData || '';
   const pdfURL   = $('#cert-pdf-url')?.value.trim() || '';
 
   if (!$('#cert-title').value.trim()) { alert('Certificate title is required.'); return; }
-  if (!imageURL && !pdfURL) {
-    alert('Please upload a certificate image OR paste a PDF link (Google Drive).');
+  if (!imageURL && !pdfData && !pdfURL) {
+    alert('Please upload an image or PDF file, OR paste a Google Drive PDF link.');
     return;
   }
 
   const data = {
     title:       $('#cert-title').value.trim(),
-    imageURL:    imageURL || '',
-    pdfURL:      pdfURL,
+    imageURL,
+    pdfData,
+    pdfURL,
     date:        $('#cert-date').value,
     description: $('#cert-description').value.trim()
   };

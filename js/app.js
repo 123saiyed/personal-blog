@@ -32,19 +32,40 @@ function ensureUrl(url) {
   return 'https://' + url;
 }
 
+function openPdfBlob(base64data) {
+  try {
+    const b64 = base64data.includes(',') ? base64data.split(',')[1] : base64data;
+    const bytes = atob(b64);
+    const arr = new Uint8Array(bytes.length);
+    for (let i = 0; i < bytes.length; i++) arr[i] = bytes.charCodeAt(i);
+    const blob = new Blob([arr], { type: 'application/pdf' });
+    window.open(URL.createObjectURL(blob), '_blank');
+  } catch (e) {
+    alert('Could not open PDF. Please try again.');
+  }
+}
+
 /* ---------- cert card ---------- */
 function createCertCard(cert) {
   const card = document.createElement('div');
   card.className = 'cert-card';
 
-  const imgHtml = cert.imageURL
+  const hasPdfData = !!cert.pdfData;
+  const hasPdfUrl  = !!cert.pdfURL;
+  const hasImage   = !!cert.imageURL;
+
+  const imgHtml = hasImage
     ? `<img src="${safe(cert.imageURL)}" alt="${safe(cert.title) || 'Certificate'}" loading="lazy"
            onerror="this.style.background='#F3F4F6';this.removeAttribute('src')" />`
     : `<div class="cert-pdf-placeholder"><span>&#128196;</span><p>PDF Certificate</p></div>`;
 
-  const pdfBtn = cert.pdfURL
-    ? `<a href="${safe(ensureUrl(cert.pdfURL))}" target="_blank" rel="noopener" class="cert-pdf-btn" onclick="event.stopPropagation()">View PDF &#8599;</a>`
-    : '';
+  // PDF button: direct upload takes priority over Drive link
+  let pdfBtn = '';
+  if (hasPdfData) {
+    pdfBtn = `<button class="cert-pdf-btn open-pdf-btn" onclick="event.stopPropagation()">Open PDF &#8599;</button>`;
+  } else if (hasPdfUrl) {
+    pdfBtn = `<a href="${safe(ensureUrl(cert.pdfURL))}" target="_blank" rel="noopener" class="cert-pdf-btn" onclick="event.stopPropagation()">View PDF &#8599;</a>`;
+  }
 
   card.innerHTML = `
     ${imgHtml}
@@ -55,9 +76,19 @@ function createCertCard(cert) {
       ${pdfBtn}
     </div>`;
 
-  if (cert.imageURL) {
+  if (hasPdfData) {
+    card.querySelector('.open-pdf-btn')?.addEventListener('click', e => {
+      e.stopPropagation();
+      openPdfBlob(cert.pdfData);
+    });
+  }
+
+  if (hasImage) {
     card.addEventListener('click', () => openLightbox(cert));
-  } else if (cert.pdfURL) {
+  } else if (hasPdfData) {
+    card.style.cursor = 'pointer';
+    card.addEventListener('click', () => openPdfBlob(cert.pdfData));
+  } else if (hasPdfUrl) {
     card.style.cursor = 'pointer';
     card.addEventListener('click', () => window.open(ensureUrl(cert.pdfURL), '_blank'));
   }
@@ -201,6 +232,13 @@ function initHome() {
             img.loading = 'lazy';
             img.addEventListener('click', () => openLightbox(c));
             certsEl.appendChild(img);
+          } else if (c.pdfData) {
+            const box = document.createElement('div');
+            box.className = 'cert-thumb cert-thumb-pdf';
+            box.title = c.title || 'Certificate';
+            box.innerHTML = '<span>&#128196;</span>';
+            box.addEventListener('click', () => openPdfBlob(c.pdfData));
+            certsEl.appendChild(box);
           } else if (c.pdfURL) {
             const box = document.createElement('div');
             box.className = 'cert-thumb cert-thumb-pdf';
