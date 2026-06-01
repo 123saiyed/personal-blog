@@ -529,6 +529,7 @@ function initPostEditor() {
   $$('.toolbar-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       const cmd = btn.dataset.cmd;
+      if (!cmd) return;
       if (cmd === 'createLink') {
         const url = prompt('Enter URL:');
         if (url) document.execCommand(cmd, false, url);
@@ -537,6 +538,57 @@ function initPostEditor() {
       }
       $('#post-content')?.focus();
     });
+  });
+
+  // Insert image into post body
+  const insertImgBtn  = $('#insert-img-btn');
+  const insertImgFile = $('#insert-img-file');
+  let savedRange = null;
+
+  insertImgBtn?.addEventListener('click', () => {
+    // Save cursor position before file dialog opens
+    const sel = window.getSelection();
+    if (sel && sel.rangeCount) savedRange = sel.getRangeAt(0).cloneRange();
+    insertImgFile.value = '';
+    insertImgFile.click();
+  });
+
+  insertImgFile?.addEventListener('change', e => {
+    const file = e.target.files[0];
+    if (!file) return;
+    if (file.size > 6 * 1024 * 1024) { alert('Image too large. Please choose under 6 MB.'); return; }
+
+    const reader = new FileReader();
+    reader.onload = ev => {
+      const img = new Image();
+      img.onload = () => {
+        const MAX = 900;
+        let w = img.width, h = img.height;
+        if (w > MAX) { h = Math.round(h * MAX / w); w = MAX; }
+        if (h > MAX) { w = Math.round(w * MAX / h); h = MAX; }
+        const canvas = document.createElement('canvas');
+        canvas.width = w; canvas.height = h;
+        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+        const base64 = canvas.toDataURL('image/jpeg', 0.85);
+
+        const editor = $('#post-content');
+        editor?.focus();
+
+        // Restore saved cursor position
+        if (savedRange) {
+          const sel = window.getSelection();
+          sel.removeAllRanges();
+          sel.addRange(savedRange);
+        }
+
+        document.execCommand('insertHTML', false,
+          `<img src="${base64}" alt="post image" style="max-width:100%;border-radius:8px;margin:12px 0;display:block;" />`
+        );
+        savedRange = null;
+      };
+      img.src = ev.target.result;
+    };
+    reader.readAsDataURL(file);
   });
 
   $('#post-form')?.addEventListener('submit', e => { e.preventDefault(); savePost(db, editId); });
