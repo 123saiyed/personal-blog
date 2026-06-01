@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Generate Preview Image — Ajamali Saiyad</title>
+  <style>
+    body { font-family: system-ui, sans-serif; background: #F1F5F9; text-align: center; padding: 40px 20px; margin: 0; }
+    h2 { font-size: 1.4rem; color: #111827; margin-bottom: 8px; }
+    p  { color: #6B7280; margin-bottom: 24px; }
+    canvas { display: block; margin: 0 auto 28px; max-width: 100%; box-shadow: 0 4px 24px rgba(0,0,0,.15); border-radius: 8px; }
+    .btn {
+      display: inline-block;
+      background: #2563EB; color: #fff;
+      padding: 14px 36px; border-radius: 8px;
+      font-size: 1.05rem; font-weight: 700;
+      text-decoration: none; border: none; cursor: pointer;
+      box-shadow: 0 2px 8px rgba(37,99,235,.35);
+    }
+    .btn:hover { background: #1D4ED8; }
+    .steps {
+      background: #fff; border: 1px solid #E5E7EB; border-radius: 12px;
+      max-width: 640px; margin: 32px auto 0; padding: 24px 28px; text-align: left;
+    }
+    .steps h3 { font-size: 1rem; margin-bottom: 12px; color: #111827; }
+    .steps ol  { padding-left: 20px; color: #374151; line-height: 2; font-size: .92rem; }
+    code { background: #EFF6FF; color: #2563EB; padding: 2px 7px; border-radius: 4px; font-size: .9em; }
+  </style>
+</head>
+<body>
+
+  <h2>Step 1 — Preview your LinkedIn card image below</h2>
+  <p>This is exactly what people will see when you share your portal link on LinkedIn or WhatsApp.</p>
+
+  <canvas id="og" width="1200" height="630"></canvas>
+
+  <button class="btn" id="dl-btn">&#8595; Download og-image.png</button>
+
+  <div class="steps">
+    <h3>Step 2 — Add it to your portal (one time only)</h3>
+    <ol>
+      <li>Click the button above — <code>og-image.png</code> will download to your Downloads folder</li>
+      <li>Move it into your project folder: <code>C:\Users\MY PC\Desktop\personal\</code></li>
+      <li>Open Git Bash / terminal in that folder and run:<br>
+        <code>git add og-image.png &amp;&amp; git commit -m "Add OG preview image" &amp;&amp; git push</code>
+      </li>
+      <li>Done! LinkedIn will now show the card preview when you share your link.</li>
+    </ol>
+  </div>
+
+<script>
+(function () {
+  const canvas = document.getElementById('og');
+  const ctx    = canvas.getContext('2d');
+  const W = 1200, H = 630;
+
+  /* ── Background ── */
+  ctx.fillStyle = '#FFFFFF';
+  ctx.fillRect(0, 0, W, H);
+
+  /* Top-left light-blue wash */
+  const topGrad = ctx.createLinearGradient(0, 0, W * 0.7, H * 0.65);
+  topGrad.addColorStop(0, '#EFF6FF');
+  topGrad.addColorStop(1, '#FFFFFF');
+  ctx.fillStyle = topGrad;
+  ctx.fillRect(0, 0, W, H);
+
+  /* Decorative faint circles (right) */
+  ctx.save();
+  ctx.globalAlpha = 0.07;
+  ctx.fillStyle = '#2563EB';
+  circle(ctx, 1080, 100, 220); ctx.fill();
+  circle(ctx, 1160, 500, 130); ctx.fill();
+  ctx.restore();
+
+  /* Left blue accent stripe */
+  ctx.fillStyle = '#2563EB';
+  ctx.fillRect(0, 0, 12, H);
+
+  /* ── Avatar circle ── */
+  const AX = 96, AY = 136;
+  circle(ctx, AX, AY, 52);
+  ctx.fillStyle = '#2563EB';
+  ctx.fill();
+  ctx.fillStyle = '#FFFFFF';
+  ctx.font = 'bold 30px system-ui, -apple-system, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('AS', AX, AY + 1);
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'alphabetic';
+
+  /* ── "Open to Opportunities" badge ── */
+  const BADGE_X = 170, BADGE_Y = 108;
+  ctx.font = '600 21px system-ui, -apple-system, sans-serif';
+  const badgeTxt = '  Open to Opportunities  ';
+  const bw = ctx.measureText(badgeTxt).width;
+  const bh = 34;
+  pill(ctx, BADGE_X - 2, BADGE_Y - 25, bw + 4, bh, 17, '#DBEAFE');
+  ctx.fillStyle = '#1D4ED8';
+  ctx.fillText(badgeTxt, BADGE_X, BADGE_Y);
+
+  /* ── Name ── */
+  ctx.fillStyle = '#111827';
+  ctx.font = 'bold 74px system-ui, -apple-system, sans-serif';
+  ctx.fillText('Ajamali Saiyad', 170, 215);
+
+  /* ── Job title ── */
+  ctx.fillStyle = '#2563EB';
+  ctx.font = '500 34px system-ui, -apple-system, sans-serif';
+  ctx.fillText('Assistant Professor  ·  LJ University', 170, 270);
+
+  /* ── Divider ── */
+  ctx.fillStyle = '#BFDBFE';
+  ctx.fillRect(170, 296, 860, 2);
+
+  /* ── Tag pills (skills preview) ── */
+  const tags = ['Teaching', 'Research', 'Technology', 'Open to Opportunities'];
+  let tx = 170;
+  const TY = 346;
+  ctx.font = '500 21px system-ui, -apple-system, sans-serif';
+  tags.forEach(tag => {
+    const tw = ctx.measureText(tag).width + 28;
+    pill(ctx, tx, TY - 22, tw, 34, 17, '#EFF6FF');
+    ctx.fillStyle = '#2563EB';
+    ctx.fillText(tag, tx + 14, TY);
+    tx += tw + 12;
+  });
+
+  /* ── Bottom bar ── */
+  ctx.fillStyle = '#F8FAFF';
+  ctx.fillRect(0, H - 90, W, 90);
+  ctx.fillStyle = '#BFDBFE';
+  ctx.fillRect(0, H - 90, W, 1);
+
+  /* Portal URL */
+  ctx.fillStyle = '#2563EB';
+  ctx.font = '600 24px system-ui, -apple-system, sans-serif';
+  ctx.fillText('🔗  123saiyed.github.io/personal-blog', 170, H - 48);
+
+  /* Right label */
+  ctx.textAlign = 'right';
+  ctx.fillStyle = '#94A3B8';
+  ctx.font = '500 21px system-ui, -apple-system, sans-serif';
+  ctx.fillText('Professional Portfolio', W - 60, H - 48);
+  ctx.textAlign = 'left';
+
+  /* ── Download ── */
+  document.getElementById('dl-btn').addEventListener('click', () => {
+    const a = document.createElement('a');
+    a.download = 'og-image.png';
+    a.href = canvas.toDataURL('image/png');
+    a.click();
+  });
+
+  /* ── Helpers ── */
+  function circle(ctx, x, y, r) {
+    ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.closePath();
+  }
+  function pill(ctx, x, y, w, h, r, color) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.lineTo(x + w - r, y);
+    ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+    ctx.lineTo(x + w, y + h - r);
+    ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+    ctx.lineTo(x + r, y + h);
+    ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+    ctx.lineTo(x, y + r);
+    ctx.quadraticCurveTo(x, y, x + r, y);
+    ctx.closePath();
+    ctx.fillStyle = color;
+    ctx.fill();
+  }
+})();
+</script>
+</body>
+</html>
