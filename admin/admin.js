@@ -202,7 +202,6 @@ function buildCertRow(c, db) {
 
   tr.innerHTML = `
     <td><strong>${safe(c.title) || 'Untitled'}</strong></td>
-    <td>${c.date ? safe(formatMonth(c.date)) : '—'}</td>
     <td>${viewCell}</td>
     <td>
       <button class="action-btn edit-cert-btn">Edit</button>
@@ -362,10 +361,8 @@ function openCertModal(docId, data, db) {
   if (statusEl) { statusEl.textContent = ''; statusEl.style.color = ''; }
 
   // Form fields
-  $('#cert-doc-id').value      = docId || '';
-  $('#cert-title').value       = data?.title || '';
-  $('#cert-date').value        = data?.date || '';
-  $('#cert-description').value = data?.description || '';
+  $('#cert-doc-id').value = docId || '';
+  $('#cert-title').value  = data?.title || '';
   const pdfUrlEl = $('#cert-pdf-url');
   if (pdfUrlEl) pdfUrlEl.value = data?.pdfURL || '';
 
@@ -425,12 +422,10 @@ function saveCert(db) {
 
   // pdfData stored separately — cert node stays small for fast page loads
   const certData = {
-    title:       $('#cert-title').value.trim(),
+    title:    $('#cert-title').value.trim(),
     imageURL,
     hasPdf,
     pdfURL,
-    date:        $('#cert-date').value,
-    description: $('#cert-description').value.trim()
   };
 
   const btn = $('#cert-save-btn');
