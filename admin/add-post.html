@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Write Post — Admin</title>
+  <link rel="stylesheet" href="../css/style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+</head>
+<body class="admin-body">
+
+  <!-- Login guard -->
+  <div class="login-screen hidden" id="login-screen">
+    <div class="login-card">
+      <h1 class="login-logo">Ajamali Saiyad</h1>
+      <p class="login-sub">Admin Portal</p>
+      <form id="login-form" novalidate>
+        <div class="form-group">
+          <label for="login-email">Email</label>
+          <input type="email" id="login-email" placeholder="your@email.com" required autocomplete="email" />
+        </div>
+        <div class="form-group">
+          <label for="login-password">Password</label>
+          <input type="password" id="login-password" placeholder="••••••••" required autocomplete="current-password" />
+        </div>
+        <p class="login-error hidden" id="login-error">Incorrect email or password.</p>
+        <button type="submit" class="btn-primary btn-full" id="login-btn">
+          <span id="login-text">Sign In</span>
+          <span class="spinner hidden" id="login-spinner"></span>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Admin Layout -->
+  <div class="admin-layout hidden" id="admin-app">
+
+    <aside class="admin-sidebar">
+      <div class="sidebar-logo">Ajamali Saiyad<span class="admin-tag">Admin</span></div>
+      <nav class="sidebar-nav">
+        <a href="dashboard.html" class="sidebar-link">
+          <span class="sidebar-icon">&#9783;</span> Dashboard
+        </a>
+        <a href="add-post.html" class="sidebar-link active">
+          <span class="sidebar-icon">&#9998;</span> New Post
+        </a>
+        <a href="dashboard.html#posts" class="sidebar-link">
+          <span class="sidebar-icon">&#128196;</span> All Posts
+        </a>
+        <a href="dashboard.html#certs" class="sidebar-link">
+          <span class="sidebar-icon">&#127942;</span> Certificates
+        </a>
+        <a href="dashboard.html#inquiries" class="sidebar-link">
+          <span class="sidebar-icon">&#128140;</span> Inquiries
+        </a>
+      </nav>
+      <div class="sidebar-footer">
+        <a href="../index.html" class="sidebar-link">&#127968; View Site</a>
+        <button class="sidebar-link sidebar-logout" id="logout-btn">&#x2192; Sign Out</button>
+      </div>
+    </aside>
+
+    <main class="admin-main">
+
+      <header class="admin-topbar">
+        <h2 id="page-heading">New Post</h2>
+        <span class="admin-user" id="admin-user-email"></span>
+      </header>
+
+      <div class="post-editor">
+        <form id="post-form" novalidate>
+          <input type="hidden" id="post-doc-id" />
+
+          <div class="editor-main">
+            <div class="form-group">
+              <input type="text" id="post-title" class="post-title-input"
+                placeholder="Post title..." required maxlength="150" />
+            </div>
+
+            <div class="editor-toolbar">
+              <button type="button" class="toolbar-btn" data-cmd="bold" title="Bold"><b>B</b></button>
+              <button type="button" class="toolbar-btn" data-cmd="italic" title="Italic"><i>I</i></button>
+              <button type="button" class="toolbar-btn" data-cmd="underline" title="Underline"><u>U</u></button>
+              <span class="toolbar-sep"></span>
+              <button type="button" class="toolbar-btn" data-cmd="insertUnorderedList" title="Bullet list">&#8226; List</button>
+              <button type="button" class="toolbar-btn" data-cmd="insertOrderedList" title="Numbered list">1. List</button>
+              <span class="toolbar-sep"></span>
+              <button type="button" class="toolbar-btn" data-cmd="createLink" title="Insert link">&#128279; Link</button>
+            </div>
+
+            <div id="post-content" class="post-content-editor" contenteditable="true"
+              role="textbox" aria-multiline="true" aria-label="Post content"
+              data-placeholder="Start writing your post..."></div>
+          </div>
+
+          <div class="editor-sidebar">
+            <div class="editor-panel">
+              <h4>Publish</h4>
+              <div class="form-group">
+                <label>Status</label>
+                <div class="toggle-row">
+                  <label class="toggle-switch">
+                    <input type="checkbox" id="post-published" />
+                    <span class="toggle-slider"></span>
+                  </label>
+                  <span id="publish-label">Draft</span>
+                </div>
+              </div>
+              <div class="editor-actions">
+                <button type="submit" class="btn-primary btn-full" id="save-post-btn">
+                  <span id="save-text">Save Post</span>
+                  <span class="spinner hidden" id="save-spinner"></span>
+                </button>
+                <a href="dashboard.html" class="btn-secondary btn-full">Cancel</a>
+              </div>
+            </div>
+
+            <div class="editor-panel">
+              <h4>Details</h4>
+              <div class="form-group">
+                <label for="post-category">Category</label>
+                <select id="post-category">
+                  <option value="update">Update</option>
+                  <option value="learning">Learning</option>
+                  <option value="project">Project</option>
+                  <option value="career">Career</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="post-excerpt">Excerpt</label>
+                <textarea id="post-excerpt" rows="3"
+                  placeholder="Short summary shown on the blog list..." maxlength="250"></textarea>
+                <small id="excerpt-count">0 / 250</small>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+
+      <div class="toast hidden" id="save-toast"></div>
+
+    </main>
+  </div>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="../js/firebase-config.js"></script>
+  <script src="admin.js"></script>
+</body>
+</html>

@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Dashboard — Ajamali Saiyad</title>
+  <link rel="stylesheet" href="../css/style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+</head>
+<body class="admin-body">
+
+  <!-- ===== LOGIN SCREEN ===== -->
+  <div class="login-screen" id="login-screen">
+    <div class="login-card">
+      <h1 class="login-logo">Ajamali Saiyad</h1>
+      <p class="login-sub">Admin Portal</p>
+      <form id="login-form" novalidate>
+        <div class="form-group">
+          <label for="login-email">Email</label>
+          <input type="email" id="login-email" placeholder="your@email.com" required autocomplete="email" />
+        </div>
+        <div class="form-group">
+          <label for="login-password">Password</label>
+          <input type="password" id="login-password" placeholder="••••••••" required autocomplete="current-password" />
+        </div>
+        <p class="login-error hidden" id="login-error">Incorrect email or password.</p>
+        <button type="submit" class="btn-primary btn-full" id="login-btn">
+          <span id="login-text">Sign In</span>
+          <span class="spinner hidden" id="login-spinner"></span>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ===== ADMIN LAYOUT ===== -->
+  <div class="admin-layout hidden" id="admin-app">
+
+    <aside class="admin-sidebar">
+      <div class="sidebar-logo">Ajamali Saiyad<span class="admin-tag">Admin</span></div>
+      <nav class="sidebar-nav">
+        <a href="dashboard.html" class="sidebar-link active">
+          <span class="sidebar-icon">&#9783;</span> Dashboard
+        </a>
+        <a href="add-post.html" class="sidebar-link">
+          <span class="sidebar-icon">&#9998;</span> New Post
+        </a>
+        <a href="dashboard.html#posts" class="sidebar-link" id="nav-posts">
+          <span class="sidebar-icon">&#128196;</span> All Posts
+        </a>
+        <a href="dashboard.html#certs" class="sidebar-link" id="nav-certs">
+          <span class="sidebar-icon">&#127942;</span> Certificates
+        </a>
+      </nav>
+      <div class="sidebar-footer">
+        <a href="../index.html" class="sidebar-link">&#127968; View Site</a>
+        <button class="sidebar-link sidebar-logout" id="logout-btn">&#x2192; Sign Out</button>
+      </div>
+    </aside>
+
+    <main class="admin-main">
+
+      <header class="admin-topbar">
+        <h2 id="page-title">Dashboard</h2>
+        <span class="admin-user" id="admin-user-email"></span>
+      </header>
+
+      <div class="stats-row" id="stats-row">
+        <div class="stat-card">
+          <div class="stat-num" id="stat-posts">—</div>
+          <div class="stat-label">Published Posts</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num" id="stat-drafts">—</div>
+          <div class="stat-label">Drafts</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num" id="stat-certs">—</div>
+          <div class="stat-label">Certificates</div>
+        </div>
+      </div>
+
+      <div class="quick-actions">
+        <a href="add-post.html" class="btn-primary">+ New Post</a>
+        <button class="btn-secondary" id="add-cert-btn">+ Add Certificate</button>
+        <button class="btn-secondary" id="edit-profile-btn">&#9998; Edit Profile Photo</button>
+      </div>
+
+      <!-- Posts Table -->
+      <section class="admin-section" id="posts">
+        <div class="admin-section-header">
+          <h3>Blog Posts</h3>
+          <a href="add-post.html" class="link-more">+ New Post</a>
+        </div>
+        <div class="table-wrap">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Title</th><th>Category</th><th>Date</th><th>Status</th><th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="posts-tbody">
+              <tr><td colspan="5" class="table-loading">Loading posts...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Certificates Table -->
+      <section class="admin-section" id="certs">
+        <div class="admin-section-header">
+          <h3>Certificates</h3>
+          <button class="link-more" id="add-cert-btn2">+ Add Certificate</button>
+        </div>
+        <div class="table-wrap">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Title</th><th>Date</th><th>Image URL</th><th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="certs-tbody">
+              <tr><td colspan="4" class="table-loading">Loading certificates...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+
+    </main>
+  </div>
+
+  <!-- Certificate Modal -->
+  <div class="modal hidden" id="cert-modal" role="dialog" aria-modal="true">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 id="cert-modal-title">Add Certificate</h3>
+        <button class="modal-close" id="cert-modal-close">&times;</button>
+      </div>
+      <form id="cert-form" novalidate>
+        <input type="hidden" id="cert-doc-id" />
+        <div class="form-group">
+          <label for="cert-title">Certificate Title <span class="required">*</span></label>
+          <input type="text" id="cert-title" placeholder="e.g. AWS Certified Developer" required />
+        </div>
+        <div class="form-group">
+          <label for="cert-file-input">Certificate Image <span class="required">*</span></label>
+          <input type="file" id="cert-file-input" accept="image/*"
+                 style="display:block;width:100%;padding:8px;border:2px dashed var(--blue);border-radius:8px;cursor:pointer;background:#f0f7ff;font-size:.9rem;" />
+          <small>Select a JPG or PNG of your certificate from your computer. Max recommended: 4 MB.</small>
+          <p id="cert-file-error" style="color:#dc2626;font-size:.85rem;display:none;margin-top:4px"></p>
+        </div>
+        <div id="cert-img-preview-wrap" style="display:none;text-align:center;margin-bottom:8px">
+          <img id="cert-img-preview" src="" alt="Preview"
+               style="max-width:100%;max-height:160px;border-radius:8px;border:1px solid #e5e7eb;object-fit:contain;" />
+        </div>
+        <div class="form-group">
+          <label for="cert-date">Issue Date</label>
+          <input type="month" id="cert-date" />
+        </div>
+        <div class="form-group">
+          <label for="cert-description">Description</label>
+          <textarea id="cert-description" rows="3" placeholder="Brief description of this certificate..."></textarea>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn-secondary" id="cert-cancel-btn">Cancel</button>
+          <button type="submit" class="btn-primary" id="cert-save-btn">Save Certificate</button>
+        </div>
+      </form>
+    </div>
+  </div>
+  <div class="modal-overlay hidden" id="cert-modal-overlay"></div>
+
+  <!-- Profile Photo Modal -->
+  <div class="modal hidden" id="profile-modal" role="dialog" aria-modal="true">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Update Profile Photo</h3>
+        <button class="modal-close" id="profile-modal-close">&times;</button>
+      </div>
+      <div style="text-align:center;margin-bottom:16px">
+        <img id="profile-preview" src="" alt="Preview" style="width:110px;height:110px;border-radius:50%;object-fit:cover;border:3px solid var(--blue);display:none;margin:0 auto 12px" />
+      </div>
+      <div class="form-group">
+        <label for="profile-file-input">Choose Photo from your Computer</label>
+        <input type="file" id="profile-file-input" accept="image/*"
+               style="display:block;width:100%;padding:8px;border:2px dashed var(--blue);border-radius:8px;cursor:pointer;background:#f0f7ff;font-size:.9rem;" />
+        <small>Select a JPG, PNG, or WEBP photo from your device. Max recommended size: 2 MB.</small>
+      </div>
+      <p id="profile-file-error" style="color:#dc2626;font-size:.85rem;display:none;margin-top:4px"></p>
+      <div class="modal-actions">
+        <button type="button" class="btn-secondary" id="profile-cancel-btn">Cancel</button>
+        <button type="button" class="btn-primary" id="profile-save-btn" disabled>Save Photo</button>
+      </div>
+    </div>
+  </div>
+  <div class="modal-overlay hidden" id="profile-modal-overlay"></div>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="../js/firebase-config.js"></script>
+  <script src="admin.js"></script>
+</body>
+</html>

@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Personal blog and professional portfolio by Ajamali Saiyad, Assistant Professor at LJ University. Open to new academic and industry opportunities." />
+  <meta name="keywords" content="Ajamali Saiyad, Assistant Professor, LJ University, blog, portfolio, hire" />
+  <meta name="author" content="Ajamali Saiyad" />
+  <!-- Open Graph (LinkedIn / Gmail preview) -->
+  <meta property="og:title" content="Ajamali Saiyad — Assistant Professor at LJ University" />
+  <meta property="og:description" content="Personal blog, certifications, and professional inquiry portal of Ajamali Saiyad." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://123saiyed.github.io/personal-blog" />
+  <meta property="og:image" content="https://123saiyed.github.io/personal-blog/og-image.png" />
+  <!-- Twitter card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Ajamali Saiyad — Assistant Professor at LJ University" />
+  <meta name="twitter:description" content="Personal blog, certifications, and professional inquiry portal." />
+  <title>Ajamali Saiyad — Assistant Professor</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+</head>
+<body>
+
+  <!-- ===== NAVBAR ===== -->
+  <nav class="navbar">
+    <div class="container nav-inner">
+      <a href="index.html" class="nav-logo">Ajamali Saiyad</a>
+      <ul class="nav-links">
+        <li><a href="index.html" class="active">Home</a></li>
+        <li><a href="blog.html">Blog</a></li>
+        <li><a href="certificates.html">Certificates</a></li>
+      </ul>
+      <button class="nav-toggle" aria-label="Toggle menu">&#9776;</button>
+    </div>
+  </nav>
+
+  <!-- ===== HERO ===== -->
+  <section class="hero">
+    <div class="container hero-inner">
+      <div class="hero-text">
+        <span class="badge">Open to Opportunities</span>
+        <h1>Hi, I'm <span class="accent">Ajamali Saiyad</span></h1>
+        <p class="hero-title">Assistant Professor at LJ University</p>
+        <p class="hero-bio">
+          Passionate educator and researcher with hands-on experience in academics and technology.
+          I share knowledge through my blog, showcase my certifications, and welcome opportunities
+          to collaborate, teach, or consult. Feel free to explore and reach out!
+        </p>
+        <div class="hero-actions">
+          <a href="blog.html" class="btn-primary">Read My Blog</a>
+          <a href="certificates.html" class="btn-secondary">View Certificates</a>
+        </div>
+      </div>
+      <div class="hero-avatar">
+        <div class="avatar-placeholder" id="avatar-wrap">
+          <span id="avatar-initials">AS</span>
+          <img id="avatar-img" src="" alt="Ajamali Saiyad" style="display:none;width:100%;height:100%;object-fit:cover;border-radius:50%;" />
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== ABOUT ===== -->
+  <section class="section" id="about">
+    <div class="container">
+      <h2 class="section-title">About Me</h2>
+      <div class="about-grid">
+        <div class="about-card">
+          <div class="about-icon">&#127979;</div>
+          <h3>What I Do</h3>
+          <p>I serve as an Assistant Professor at LJ University, teaching and guiding students in technology and academic subjects. I am passionate about research, curriculum development, and practical education.</p>
+        </div>
+        <div class="about-card">
+          <div class="about-icon">&#127919;</div>
+          <h3>What I'm Looking For</h3>
+          <p>Open to academic collaborations, guest lectures, research partnerships, and industry consulting roles where I can apply my expertise and continue growing professionally.</p>
+        </div>
+        <div class="about-card">
+          <div class="about-icon">&#127758;</div>
+          <h3>Location &amp; Availability</h3>
+          <p>Based at LJ University · Available for remote and on-site engagements · Open to full-time, part-time, and consulting roles.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== RECENT POSTS ===== -->
+  <section class="section section-alt" id="posts">
+    <div class="container">
+      <div class="section-header">
+        <h2 class="section-title">Latest Posts</h2>
+        <a href="blog.html" class="link-more">View all posts &rarr;</a>
+      </div>
+      <div class="posts-grid" id="home-posts">
+        <div class="post-card skeleton"></div>
+        <div class="post-card skeleton"></div>
+        <div class="post-card skeleton"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== CERTIFICATES TEASER ===== -->
+  <section class="section" id="certs-teaser">
+    <div class="container">
+      <div class="section-header">
+        <h2 class="section-title">Certifications</h2>
+        <a href="certificates.html" class="link-more">View all &rarr;</a>
+      </div>
+      <div class="certs-row" id="home-certs">
+        <div class="cert-thumb skeleton"></div>
+        <div class="cert-thumb skeleton"></div>
+        <div class="cert-thumb skeleton"></div>
+        <div class="cert-thumb skeleton"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== FOOTER ===== -->
+  <footer class="footer">
+    <div class="container footer-inner">
+      <p>&copy; <span id="footer-year"></span> Ajamali Saiyad. All rights reserved.</p>
+      <ul class="footer-links">
+        <li><a href="blog.html">Blog</a></li>
+        <li><a href="certificates.html">Certificates</a></li>
+        <li><a href="admin/dashboard.html">Admin</a></li>
+      </ul>
+    </div>
+  </footer>
+
+  <!-- Firebase SDK (must load before firebase-config.js and app.js) -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="js/firebase-config.js"></script>
+  <script src="js/app.js"></script>
+  <script>document.getElementById('footer-year').textContent = new Date().getFullYear();</script>
+</body>
+</html>
