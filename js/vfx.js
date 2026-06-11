@@ -14,6 +14,7 @@
     if (!reducedMotion) initParticleField();
     if (!reducedMotion) initParallax();
     if (!reducedMotion && !noHover) initTilt();
+    if (!reducedMotion && !noHover) initSpotlight();
     initReveal();
   });
 
@@ -28,8 +29,8 @@
     const FOV    = 420;
     const DEPTH  = 700;
     const mobile = window.innerWidth <= 768;
-    const COUNT  = mobile ? 55 : 130;
-    const LINK   = mobile ? 110 : 150;
+    const COUNT  = mobile ? 60 : 170;
+    const LINK   = mobile ? 110 : 155;
 
     let W = 0, H = 0, CX = 0, CY = 0;
     let running = true;
@@ -124,7 +125,7 @@
           const dx = a.sx - b.sx, dy = a.sy - b.sy;
           const d = Math.sqrt(dx * dx + dy * dy);
           if (d < LINK) {
-            const alpha = (1 - d / LINK) * 0.26 * Math.min(a.s, b.s);
+            const alpha = (1 - d / LINK) * 0.34 * Math.min(a.s, b.s);
             ctx.strokeStyle = 'rgba(37, 99, 235, ' + alpha.toFixed(3) + ')';
             ctx.lineWidth = 1;
             ctx.beginPath();
@@ -138,8 +139,8 @@
       // Dots
       for (let i = 0; i < COUNT; i++) {
         const p = proj[i];
-        const alpha = 0.22 + p.s * 0.45;
-        ctx.fillStyle = 'rgba(37, 99, 235, ' + Math.min(alpha, 0.75).toFixed(3) + ')';
+        const alpha = 0.25 + p.s * 0.5;
+        ctx.fillStyle = 'rgba(37, 99, 235, ' + Math.min(alpha, 0.85).toFixed(3) + ')';
         ctx.beginPath();
         ctx.arc(p.sx, p.sy, Math.max(p.r, 0.6), 0, Math.PI * 2);
         ctx.fill();
@@ -172,6 +173,29 @@
   }
 
   /* ============================================================
+     CURSOR SPOTLIGHT — soft glow follows the mouse
+     ============================================================ */
+  function initSpotlight() {
+    const s = document.createElement('div');
+    s.id = 'vfx-spotlight';
+    s.setAttribute('aria-hidden', 'true');
+    document.body.appendChild(s);
+
+    let tx = window.innerWidth / 2, ty = window.innerHeight * 0.3;
+    let x = tx, y = ty;
+
+    window.addEventListener('mousemove', e => { tx = e.clientX; ty = e.clientY; });
+
+    (function loop() {
+      x += (tx - x) * 0.12;
+      y += (ty - y) * 0.12;
+      s.style.setProperty('--spot-x', x.toFixed(1) + 'px');
+      s.style.setProperty('--spot-y', y.toFixed(1) + 'px');
+      requestAnimationFrame(loop);
+    })();
+  }
+
+  /* ============================================================
      3D TILT — cards follow the cursor
      ============================================================ */
   function initTilt() {
@@ -190,6 +214,9 @@
         card.style.transform =
           'perspective(800px) rotateX(' + (-py * MAX).toFixed(2) + 'deg)' +
           ' rotateY(' + (px * MAX).toFixed(2) + 'deg) translateY(-5px) scale(1.02)';
+        // glow position for ::after radial gradient
+        card.style.setProperty('--mx', (e.clientX - r.left).toFixed(0) + 'px');
+        card.style.setProperty('--my', (e.clientY - r.top).toFixed(0)  + 'px');
       });
 
       card.addEventListener('mouseleave', () => {

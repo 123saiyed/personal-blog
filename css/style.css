@@ -926,7 +926,21 @@ body.vfx-on .footer {
   backdrop-filter: blur(12px);
 }
 
-/* ---------- Animated gradient name ---------- */
+/* ---------- Big 3D typography hero ---------- */
+.hero-hi {
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin-bottom: 2px;
+  letter-spacing: .02em;
+}
+.hero-text h1.hero-name {
+  font-size: clamp(2.7rem, 7vw, 5.4rem);
+  font-weight: 800;
+  line-height: 1.04;
+  letter-spacing: -0.025em;
+  margin-bottom: 16px;
+}
 .hero-text h1 .accent {
   background: linear-gradient(120deg, #2563EB, #60A5FA, #1D4ED8, #2563EB);
   background-size: 300% 100%;
@@ -935,6 +949,10 @@ body.vfx-on .footer {
   -webkit-text-fill-color: transparent;
   color: transparent;
   animation: gradient-shift 6s ease-in-out infinite;
+  /* layered 3D depth + glow (drop-shadow works with clipped gradient text) */
+  filter:
+    drop-shadow(0 2px 0 rgba(29,78,216,.25))
+    drop-shadow(0 12px 28px rgba(37,99,235,.35));
 }
 @keyframes gradient-shift {
   0%, 100% { background-position: 0% 50%; }
@@ -984,6 +1002,47 @@ body.vfx-on .footer {
   0%, 100% { transform: translate(0, 0) scale(1); }
   50%      { transform: translate(70px, -45px) scale(1.08); }
 }
+.vfx-blob-3 {
+  width: 380px; height: 380px;
+  background: radial-gradient(circle, rgba(34,211,238,.40), rgba(129,140,248,.25) 55%, transparent 75%);
+  top: 40%; left: 55%;
+  opacity: .38;
+  animation: blob-drift-3 26s ease-in-out infinite;
+}
+@keyframes blob-drift-3 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33%      { transform: translate(-80px, 60px) scale(1.15); }
+  66%      { transform: translate(50px, -40px) scale(.92); }
+}
+
+/* ---------- Cursor spotlight (div injected by vfx.js) ---------- */
+#vfx-spotlight {
+  position: fixed;
+  inset: 0;
+  z-index: 4;
+  pointer-events: none;
+  background: radial-gradient(
+    620px circle at var(--spot-x, 50%) var(--spot-y, 30%),
+    rgba(37,99,235,.075), transparent 65%
+  );
+}
+
+/* ---------- Card glow border tracking cursor ---------- */
+.tilt-card { position: relative; }
+.tilt-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(
+    260px circle at var(--mx, 50%) var(--my, 50%),
+    rgba(37,99,235,.18), transparent 70%
+  );
+  opacity: 0;
+  transition: opacity .25s ease;
+  pointer-events: none;
+}
+.tilt-card:hover::after { opacity: 1; }
 
 /* ---------- Glassmorphism cards ---------- */
 body.vfx-on .about-card,
@@ -1078,6 +1137,8 @@ body.vfx-on .page-header {
 @media (max-width: 768px) {
   .vfx-blob-1 { width: 300px; height: 300px; }
   .vfx-blob-2 { width: 260px; height: 260px; }
+  .vfx-blob-3 { width: 220px; height: 220px; }
+  #vfx-spotlight { display: none; }
 }
 
 /* ---------- Reduced motion: kill all VFX animation ---------- */
