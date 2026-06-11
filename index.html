@@ -43,8 +43,13 @@
     </div>
   </nav>
 
+  <!-- Floating gradient blobs (decoration) -->
+  <div class="vfx-blob vfx-blob-1" aria-hidden="true"></div>
+  <div class="vfx-blob vfx-blob-2" aria-hidden="true"></div>
+
   <!-- HERO -->
   <section class="hero">
+    <canvas id="hero-canvas" aria-hidden="true"></canvas>
     <div class="container hero-inner">
       <div class="hero-text">
         <span class="badge" id="hero-badge">Open to Opportunities</span>
@@ -152,6 +157,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
   <script src="js/firebase-config.js"></script>
   <script src="js/app.js"></script>
+  <script src="js/vfx.js" defer></script>
   <script>document.getElementById('footer-year').textContent = new Date().getFullYear();</script>
 </body>
 </html>

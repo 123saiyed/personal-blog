@@ -882,3 +882,183 @@ small { font-size: .8rem; color: var(--text-muted); }
   /* Certs teaser thumbnails */
   .cert-thumb { width: 160px; height: 110px; }
 }
+
+/* ============================================================
+   3D VFX LAYER — particle hero, glass cards, tilt, reveal
+   (public pages only; admin pages don't load vfx.js)
+   ============================================================ */
+
+/* ---------- Hero: gradient backdrop + particle canvas ---------- */
+.hero {
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(ellipse 80% 70% at 70% 20%, rgba(37,99,235,.10), transparent 60%),
+    radial-gradient(ellipse 60% 60% at 15% 85%, rgba(96,165,250,.10), transparent 60%),
+    linear-gradient(180deg, #F8FAFF 0%, #FFFFFF 100%);
+}
+#hero-canvas {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+.hero-inner { position: relative; z-index: 1; }
+
+/* ---------- Animated gradient name ---------- */
+.hero-text h1 .accent {
+  background: linear-gradient(120deg, #2563EB, #60A5FA, #1D4ED8, #2563EB);
+  background-size: 300% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  animation: gradient-shift 6s ease-in-out infinite;
+}
+@keyframes gradient-shift {
+  0%, 100% { background-position: 0% 50%; }
+  50%      { background-position: 100% 50%; }
+}
+
+/* ---------- Floating avatar with glow ring ---------- */
+.hero-avatar .avatar-placeholder {
+  animation: avatar-float 5s ease-in-out infinite;
+  box-shadow:
+    0 0 0 6px rgba(37,99,235,.08),
+    0 0 40px rgba(37,99,235,.25),
+    0 18px 40px rgba(37,99,235,.18);
+}
+@keyframes avatar-float {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-10px); }
+}
+
+/* ---------- Floating gradient blobs (behind content) ---------- */
+.vfx-blob {
+  position: fixed;
+  border-radius: 50%;
+  filter: blur(90px);
+  opacity: .45;
+  z-index: -1;
+  pointer-events: none;
+}
+.vfx-blob-1 {
+  width: 480px; height: 480px;
+  background: radial-gradient(circle, rgba(96,165,250,.55), transparent 70%);
+  top: -120px; right: -140px;
+  animation: blob-drift-1 18s ease-in-out infinite;
+}
+.vfx-blob-2 {
+  width: 420px; height: 420px;
+  background: radial-gradient(circle, rgba(37,99,235,.35), transparent 70%);
+  bottom: -140px; left: -160px;
+  animation: blob-drift-2 22s ease-in-out infinite;
+}
+@keyframes blob-drift-1 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50%      { transform: translate(-60px, 50px) scale(1.12); }
+}
+@keyframes blob-drift-2 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50%      { transform: translate(70px, -45px) scale(1.08); }
+}
+
+/* ---------- Glassmorphism cards ---------- */
+body.vfx-on .about-card,
+body.vfx-on .contact-card {
+  background: rgba(255,255,255,.62);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+  border: 1px solid rgba(255,255,255,.85);
+  box-shadow:
+    0 1px 2px rgba(16,24,40,.04),
+    0 8px 24px rgba(37,99,235,.08);
+}
+body.vfx-on .cert-card {
+  background: rgba(255,255,255,.7);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255,255,255,.85);
+  box-shadow:
+    0 1px 2px rgba(16,24,40,.04),
+    0 8px 24px rgba(37,99,235,.08);
+}
+body.vfx-on .section-alt {
+  background:
+    radial-gradient(ellipse 70% 90% at 85% 10%, rgba(37,99,235,.05), transparent 55%),
+    var(--bg-alt);
+}
+
+/* ---------- 3D tilt cards ---------- */
+.tilt-card {
+  transition: transform .25s ease-out, box-shadow .25s ease-out;
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+.tilt-card:hover {
+  box-shadow:
+    0 4px 8px rgba(16,24,40,.06),
+    0 24px 48px rgba(37,99,235,.16) !important;
+}
+
+/* ---------- Buttons: glow + lift ---------- */
+body.vfx-on .btn-primary {
+  box-shadow: 0 4px 16px rgba(37,99,235,.35);
+  transition: background .15s, transform .2s ease, box-shadow .2s ease;
+}
+body.vfx-on .btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(37,99,235,.45);
+}
+body.vfx-on .btn-secondary {
+  transition: background .15s, color .15s, transform .2s ease, box-shadow .2s ease;
+}
+body.vfx-on .btn-secondary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(37,99,235,.18);
+}
+
+/* ---------- Skill tags: lift + glow ---------- */
+body.vfx-on .skill-tag {
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  background: rgba(239,246,255,.8);
+  transition: background .15s, transform .2s ease, box-shadow .2s ease;
+}
+body.vfx-on .skill-tag:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(37,99,235,.22);
+}
+
+/* ---------- Page header (certificates page) ---------- */
+body.vfx-on .page-header {
+  background:
+    radial-gradient(ellipse 70% 100% at 80% 0%, rgba(37,99,235,.10), transparent 60%),
+    linear-gradient(180deg, #F8FAFF 0%, var(--bg-alt) 100%);
+}
+
+/* ---------- Scroll reveal ---------- */
+.reveal-item {
+  opacity: 0;
+  transform: translateY(26px);
+  transition: opacity .7s cubic-bezier(.16,1,.3,1), transform .7s cubic-bezier(.16,1,.3,1);
+}
+.reveal-item.revealed {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ---------- Mobile adjustments ---------- */
+@media (max-width: 768px) {
+  .vfx-blob-1 { width: 300px; height: 300px; }
+  .vfx-blob-2 { width: 260px; height: 260px; }
+}
+
+/* ---------- Reduced motion: kill all VFX animation ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .hero-text h1 .accent { animation: none; }
+  .hero-avatar .avatar-placeholder { animation: none; }
+  .vfx-blob { animation: none; }
+  .reveal-item { opacity: 1; transform: none; transition: none; }
+  .tilt-card { transition: none; }
+}
