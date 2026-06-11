@@ -128,12 +128,41 @@ function bindMobileSidebar() {
    ============================================================ */
 function initDashboard() {
   const db = getDB();
+  migrateLegacyPdfs(db);
   loadStats(db);
   loadCertsTable(db);
   bindCertModal(db);
   bindProfileModal(db);
   loadHomeSettings(db);
   bindHomeSettings(db);
+}
+
+/* --- One-time data repair: move inline pdfData out of the
+       certificates node so public pages load fast.
+       Runs silently on every dashboard visit; no-op once clean. --- */
+function migrateLegacyPdfs(db) {
+  db.ref('certificates').once('value').then(snap => {
+    let moved = 0;
+    const ops = [];
+    snap.forEach(child => {
+      const v = child.val() || {};
+      if (v.pdfData) {
+        moved++;
+        ops.push(
+          db.ref('certificate_pdfs/' + child.key).set(v.pdfData)
+            .then(() => db.ref('certificates/' + child.key).update({ pdfData: null, hasPdf: true }))
+        );
+      } else if (!v.hasPdf && v.pdfURL) {
+        ops.push(db.ref('certificates/' + child.key).update({ hasPdf: true }));
+      }
+    });
+    if (moved > 0) {
+      Promise.all(ops).then(() => {
+        showToast('Optimized ' + moved + ' certificate(s) — site will load faster now!');
+        loadStats(db);
+      }).catch(err => console.error('PDF migration error:', err));
+    }
+  }).catch(err => console.error('Migration scan error:', err));
 }
 
 /* --- Stats --- */
