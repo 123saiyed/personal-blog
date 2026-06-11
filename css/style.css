@@ -1141,6 +1141,276 @@ body.vfx-on .page-header {
   #vfx-spotlight { display: none; }
 }
 
+/* ============================================================
+   HOLO THEME — sci-fi holographic dark universe
+   Scoped to body.holo (index + certificates only; admin untouched)
+   ============================================================ */
+body.holo {
+  --text:       #E6EDF7;
+  --text-muted: #8FA3C2;
+  --border:     rgba(120,170,255,.16);
+  --bg:         #070D1F;
+  --bg-alt:     rgba(10,18,40,.5);
+  --blue-light: rgba(34,211,238,.12);
+  --shadow:     0 1px 3px rgba(0,0,0,.4);
+  --shadow-md:  0 8px 32px rgba(0,0,0,.5);
+
+  background:
+    radial-gradient(ellipse 90% 60% at 75% -10%, rgba(37,99,235,.22), transparent 55%),
+    radial-gradient(ellipse 70% 50% at 10% 110%, rgba(139,92,246,.16), transparent 55%),
+    #060B1A;
+  background-attachment: fixed;
+  color: var(--text);
+}
+
+/* ---------- Glass navbar (dark holo) ---------- */
+body.holo .navbar {
+  background: rgba(7,13,31,.72);
+  -webkit-backdrop-filter: blur(18px);
+  backdrop-filter: blur(18px);
+  border-bottom: 1px solid rgba(56,189,248,.18);
+  box-shadow: 0 4px 30px rgba(34,211,238,.07);
+}
+body.holo .nav-logo { color: var(--text); }
+body.holo .nav-links a { color: var(--text-muted); }
+body.holo .nav-links a:hover,
+body.holo .nav-links a.active { color: #7DD3FC; background: rgba(56,189,248,.10); }
+
+/* ---------- Hero: holographic stage ---------- */
+body.holo .hero {
+  background:
+    radial-gradient(ellipse 70% 60% at 65% 25%, rgba(34,211,238,.10), transparent 60%),
+    radial-gradient(ellipse 50% 50% at 20% 80%, rgba(139,92,246,.10), transparent 60%);
+  overflow: hidden;
+}
+
+/* Holographic perspective grid floor */
+body.holo .holo-grid {
+  position: absolute;
+  left: -25%; right: -25%; bottom: -50px;
+  height: 48%;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(56,189,248,.22) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(56,189,248,.22) 1px, transparent 1px);
+  background-size: 46px 46px;
+  transform: perspective(460px) rotateX(62deg);
+  transform-origin: top;
+  -webkit-mask-image: linear-gradient(to bottom, transparent, #000 28%, transparent 96%);
+  mask-image: linear-gradient(to bottom, transparent, #000 28%, transparent 96%);
+  animation: holo-grid-scroll 12s linear infinite;
+  z-index: 0;
+}
+@keyframes holo-grid-scroll {
+  to { background-position: 0 46px, 0 0; }
+}
+
+/* ---------- Neon holographic name ---------- */
+body.holo .hero-hi { color: #9DB7DC; }
+body.holo .hero-text h1 .accent {
+  background: linear-gradient(120deg, #22D3EE, #60A5FA, #A78BFA, #22D3EE);
+  background-size: 300% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter:
+    drop-shadow(0 0 14px rgba(34,211,238,.55))
+    drop-shadow(0 10px 36px rgba(99,102,241,.45));
+}
+body.holo .badge {
+  background: rgba(34,211,238,.10);
+  color: #67E8F9;
+  border: 1px solid rgba(34,211,238,.4);
+  box-shadow: 0 0 16px rgba(34,211,238,.25), inset 0 0 12px rgba(34,211,238,.08);
+}
+
+/* ---------- Avatar: holo ring ---------- */
+body.holo .avatar-placeholder {
+  background: rgba(13,25,55,.7);
+  border-color: rgba(34,211,238,.65);
+  color: #67E8F9;
+  box-shadow:
+    0 0 0 7px rgba(34,211,238,.08),
+    0 0 45px rgba(34,211,238,.4),
+    0 18px 50px rgba(59,130,246,.3);
+}
+
+/* ---------- Holographic glass cards ---------- */
+body.holo .about-card,
+body.holo .contact-card,
+body.holo .cert-card {
+  background: rgba(13,24,52,.55);
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(120,180,255,.22);
+  box-shadow:
+    0 0 0 1px rgba(34,211,238,.06),
+    0 14px 40px rgba(0,0,0,.45),
+    inset 0 1px 0 rgba(160,210,255,.14);
+}
+body.holo .about-card h3,
+body.holo .cert-card-body h3,
+body.holo .contact-val { color: var(--text); }
+body.holo .about-card p,
+body.holo .cert-card-body p { color: var(--text-muted); }
+
+/* Scanline shimmer sweeping across cards */
+body.holo .about-card::before,
+body.holo .contact-card::before,
+body.holo .cert-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(115deg,
+    transparent 35%,
+    rgba(148,210,255,.07) 46%,
+    rgba(34,211,238,.14) 50%,
+    rgba(148,210,255,.07) 54%,
+    transparent 65%);
+  background-size: 260% 100%;
+  animation: holo-sweep 6s linear infinite;
+}
+body.holo .about-card,
+body.holo .contact-card { position: relative; }
+@keyframes holo-sweep {
+  0%   { background-position: 130% 0; }
+  100% { background-position: -130% 0; }
+}
+
+/* Cursor glow recolored cyan */
+body.holo .tilt-card::after {
+  background: radial-gradient(
+    260px circle at var(--mx, 50%) var(--my, 50%),
+    rgba(34,211,238,.22), transparent 70%
+  );
+}
+body.holo .tilt-card:hover {
+  box-shadow:
+    0 0 0 1px rgba(34,211,238,.35),
+    0 0 30px rgba(34,211,238,.25),
+    0 28px 60px rgba(0,0,0,.55) !important;
+}
+
+/* ---------- Sections ---------- */
+body.holo .section-alt {
+  background: rgba(10,18,40,.45);
+  -webkit-backdrop-filter: blur(3px);
+  backdrop-filter: blur(3px);
+}
+body.holo .section-title { color: var(--text); position: relative; }
+body.holo .section-title::after {
+  content: '';
+  display: block;
+  width: 64px; height: 3px;
+  margin-top: 10px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, #22D3EE, #3B82F6, #8B5CF6);
+  box-shadow: 0 0 14px rgba(34,211,238,.7);
+}
+
+/* ---------- Buttons: holographic ---------- */
+body.holo .btn-primary {
+  background: linear-gradient(120deg, #2563EB, #0EA5E9);
+  box-shadow: 0 0 22px rgba(34,211,238,.4), 0 8px 28px rgba(37,99,235,.4);
+}
+body.holo .btn-primary:hover {
+  background: linear-gradient(120deg, #1D4ED8, #0891B2);
+  box-shadow: 0 0 34px rgba(34,211,238,.6), 0 12px 36px rgba(37,99,235,.5);
+}
+body.holo .btn-secondary {
+  color: #7DD3FC;
+  border-color: rgba(56,189,248,.5);
+}
+body.holo .btn-secondary:hover {
+  background: rgba(56,189,248,.12);
+  box-shadow: 0 0 22px rgba(34,211,238,.25);
+}
+
+/* ---------- Skill tags: neon chips ---------- */
+body.holo .skill-tag {
+  background: rgba(34,211,238,.08);
+  color: #7DD3FC;
+  border: 1px solid rgba(34,211,238,.35);
+}
+body.holo .skill-tag:hover {
+  background: rgba(34,211,238,.16);
+  box-shadow: 0 0 18px rgba(34,211,238,.4);
+}
+
+/* ---------- Certificates page ---------- */
+body.holo .page-header {
+  background:
+    radial-gradient(ellipse 70% 100% at 80% 0%, rgba(34,211,238,.12), transparent 60%),
+    rgba(7,13,31,.5);
+  border-bottom: 1px solid var(--border);
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
+}
+body.holo .cert-thumb { border-color: rgba(120,180,255,.25); }
+body.holo .cert-pdf-placeholder { background: rgba(34,211,238,.07); }
+body.holo .cert-pdf-placeholder p { color: #7DD3FC; }
+body.holo .cert-pdf-btn {
+  background: rgba(34,211,238,.10);
+  color: #7DD3FC;
+  border-color: rgba(34,211,238,.35);
+}
+body.holo .cert-pdf-btn:hover { background: rgba(34,211,238,.18); }
+body.holo .cert-thumb-pdf {
+  background: rgba(34,211,238,.08);
+  border-color: rgba(34,211,238,.3);
+}
+body.holo .skeleton,
+body.holo .cert-thumb.skeleton,
+body.holo .cert-card.skeleton {
+  background: linear-gradient(90deg, rgba(20,32,64,.7) 25%, rgba(30,46,88,.7) 50%, rgba(20,32,64,.7) 75%);
+  background-size: 400% 100%;
+}
+
+/* ---------- Lightbox (dark) ---------- */
+body.holo .lightbox-content {
+  background: #0B1430;
+  border: 1px solid rgba(120,180,255,.25);
+  box-shadow: 0 0 60px rgba(34,211,238,.18), 0 30px 80px rgba(0,0,0,.6);
+}
+body.holo .lightbox-content img { background: #060B1A; }
+body.holo .lightbox-close { background: #101B3A; color: #CFE3FF; }
+body.holo .lightbox-overlay { background: rgba(2,6,16,.8); }
+
+/* ---------- Footer ---------- */
+body.holo .footer {
+  background: rgba(7,13,31,.7);
+  border-top: 1px solid rgba(56,189,248,.15);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+}
+
+/* ---------- Blobs & spotlight recolored for dark space ---------- */
+body.holo .vfx-blob-1 {
+  background: radial-gradient(circle, rgba(34,211,238,.4), transparent 70%);
+  opacity: .5;
+}
+body.holo .vfx-blob-2 {
+  background: radial-gradient(circle, rgba(139,92,246,.35), transparent 70%);
+  opacity: .5;
+}
+body.holo .vfx-blob-3 {
+  background: radial-gradient(circle, rgba(59,130,246,.4), rgba(34,211,238,.2) 55%, transparent 75%);
+  opacity: .45;
+}
+body.holo #vfx-spotlight {
+  background: radial-gradient(
+    640px circle at var(--spot-x, 50%) var(--spot-y, 30%),
+    rgba(34,211,238,.09), transparent 65%
+  );
+}
+
+/* ---------- Holo mobile ---------- */
+@media (max-width: 768px) {
+  body.holo .holo-grid { height: 38%; background-size: 36px 36px; }
+}
+
 /* ---------- Reduced motion: kill all VFX animation ---------- */
 @media (prefers-reduced-motion: reduce) {
   .hero-text h1 .accent { animation: none; }
@@ -1148,4 +1418,8 @@ body.vfx-on .page-header {
   .vfx-blob { animation: none; }
   .reveal-item { opacity: 1; transform: none; transition: none; }
   .tilt-card { transition: none; }
+  body.holo .holo-grid { animation: none; }
+  body.holo .about-card::before,
+  body.holo .contact-card::before,
+  body.holo .cert-card::before { animation: none; background: none; }
 }

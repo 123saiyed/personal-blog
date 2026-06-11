@@ -19,7 +19,8 @@
   });
 
   /* ============================================================
-     FULL-PAGE 3D PARTICLE FIELD — behind all content
+     FULL-PAGE CINEMATIC PARTICLE FIELD — glowing holographic
+     particles + twinkling starfield, additive blending
      ============================================================ */
   function initParticleField() {
     const canvas = document.getElementById('vfx-canvas');
@@ -29,14 +30,46 @@
     const FOV    = 420;
     const DEPTH  = 700;
     const mobile = window.innerWidth <= 768;
-    const COUNT  = mobile ? 60 : 170;
+    const COUNT  = mobile ? 60 : 160;
+    const STARS  = mobile ? 60 : 130;
     const LINK   = mobile ? 110 : 155;
+
+    // Holographic palette: cyan / blue / violet
+    const PALETTE = [[34,211,238], [96,165,250], [167,139,250]];
+
+    // Pre-rendered glow sprites (cheap soft glow, no shadowBlur)
+    const sprites = PALETTE.map(rgb => {
+      const c = document.createElement('canvas');
+      c.width = c.height = 64;
+      const g = c.getContext('2d').createRadialGradient(32, 32, 0, 32, 32, 32);
+      g.addColorStop(0,    'rgba(' + rgb + ',1)');
+      g.addColorStop(0.35, 'rgba(' + rgb + ',.45)');
+      g.addColorStop(1,    'rgba(' + rgb + ',0)');
+      const x = c.getContext('2d');
+      x.fillStyle = g;
+      x.fillRect(0, 0, 64, 64);
+      return c;
+    });
 
     let W = 0, H = 0, CX = 0, CY = 0;
     let running = true;
     let mouseX = 0, mouseY = 0;       // -1..1 parallax target
     let rotX = 0, rotY = 0;           // smoothed rotation
     let scrollRot = 0;                // extra rotation from scrolling
+    let stars = [];
+
+    function makeStars() {
+      stars = [];
+      for (let i = 0; i < STARS; i++) {
+        stars.push({
+          x: Math.random() * W,
+          y: Math.random() * H,
+          r: 0.4 + Math.random() * 1.1,
+          ph: Math.random() * Math.PI * 2,
+          sp: 0.0008 + Math.random() * 0.0012,
+        });
+      }
+    }
 
     function resize() {
       const dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -48,6 +81,7 @@
       canvas.style.height = H + 'px';
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       CX = W / 2; CY = H / 2;
+      makeStars();
     }
     resize();
     window.addEventListener('resize', resize);
@@ -62,7 +96,8 @@
         vx: (Math.random() - 0.5) * 0.22,
         vy: (Math.random() - 0.5) * 0.22,
         vz: (Math.random() - 0.5) * 0.35,
-        r: Math.random() * 1.6 + 0.8,
+        r: Math.random() * 1.8 + 1.0,
+        ci: (Math.random() * PALETTE.length) | 0,
       });
     }
 
@@ -86,9 +121,20 @@
 
     const proj = new Array(COUNT);
 
-    function frame() {
+    function frame(t) {
       if (!running) return;
+      ctx.globalCompositeOperation = 'source-over';
       ctx.clearRect(0, 0, W, H);
+
+      // Twinkling starfield (far background layer)
+      for (let i = 0; i < stars.length; i++) {
+        const st = stars[i];
+        const a = 0.18 + 0.3 * (0.5 + 0.5 * Math.sin(t * st.sp + st.ph));
+        ctx.fillStyle = 'rgba(190, 215, 255, ' + a.toFixed(3) + ')';
+        ctx.beginPath();
+        ctx.arc(st.x, st.y, st.r, 0, Math.PI * 2);
+        ctx.fill();
+      }
 
       // Smooth parallax rotation toward mouse + scroll
       rotY += (mouseX * 0.18 + scrollRot - rotY) * 0.05;
@@ -114,8 +160,11 @@
         z     = p.y * sinX + z * cosX;
 
         const s = FOV / (FOV + z + DEPTH / 2);
-        proj[i] = { sx: CX + x * s, sy: CY + y * s, s, r: p.r * s };
+        proj[i] = { sx: CX + x * s, sy: CY + y * s, s, r: p.r * s, ci: p.ci };
       }
+
+      // Additive blending = light accumulates like real glow
+      ctx.globalCompositeOperation = 'lighter';
 
       // Links
       for (let i = 0; i < COUNT; i++) {
@@ -125,8 +174,8 @@
           const dx = a.sx - b.sx, dy = a.sy - b.sy;
           const d = Math.sqrt(dx * dx + dy * dy);
           if (d < LINK) {
-            const alpha = (1 - d / LINK) * 0.34 * Math.min(a.s, b.s);
-            ctx.strokeStyle = 'rgba(37, 99, 235, ' + alpha.toFixed(3) + ')';
+            const alpha = (1 - d / LINK) * 0.22 * Math.min(a.s, b.s);
+            ctx.strokeStyle = 'rgba(56, 189, 248, ' + alpha.toFixed(3) + ')';
             ctx.lineWidth = 1;
             ctx.beginPath();
             ctx.moveTo(a.sx, a.sy);
@@ -136,15 +185,14 @@
         }
       }
 
-      // Dots
+      // Glowing particle sprites
       for (let i = 0; i < COUNT; i++) {
         const p = proj[i];
-        const alpha = 0.25 + p.s * 0.5;
-        ctx.fillStyle = 'rgba(37, 99, 235, ' + Math.min(alpha, 0.85).toFixed(3) + ')';
-        ctx.beginPath();
-        ctx.arc(p.sx, p.sy, Math.max(p.r, 0.6), 0, Math.PI * 2);
-        ctx.fill();
+        const sz = Math.max(p.r * 7, 3);
+        ctx.globalAlpha = Math.min(0.3 + p.s * 0.55, 0.9);
+        ctx.drawImage(sprites[p.ci], p.sx - sz / 2, p.sy - sz / 2, sz, sz);
       }
+      ctx.globalAlpha = 1;
 
       requestAnimationFrame(frame);
     }
