@@ -884,26 +884,47 @@ small { font-size: .8rem; color: var(--text-muted); }
 }
 
 /* ============================================================
-   3D VFX LAYER — particle hero, glass cards, tilt, reveal
+   3D VFX LAYER — full-page particles, glass UI, tilt, 3D reveal
    (public pages only; admin pages don't load vfx.js)
    ============================================================ */
 
-/* ---------- Hero: gradient backdrop + particle canvas ---------- */
-.hero {
-  position: relative;
-  overflow: hidden;
-  background:
-    radial-gradient(ellipse 80% 70% at 70% 20%, rgba(37,99,235,.10), transparent 60%),
-    radial-gradient(ellipse 60% 60% at 15% 85%, rgba(96,165,250,.10), transparent 60%),
-    linear-gradient(180deg, #F8FAFF 0%, #FFFFFF 100%);
-}
-#hero-canvas {
-  position: absolute;
+/* ---------- Full-page 3D particle canvas (behind everything) ---------- */
+#vfx-canvas {
+  position: fixed;
   inset: 0;
-  z-index: 0;
+  z-index: -1;
   pointer-events: none;
 }
+
+/* ---------- Hero: gradient backdrop (transparent to particles) ---------- */
+.hero {
+  position: relative;
+  background:
+    radial-gradient(ellipse 80% 70% at 70% 20%, rgba(37,99,235,.08), transparent 60%),
+    radial-gradient(ellipse 60% 60% at 15% 85%, rgba(96,165,250,.08), transparent 60%);
+}
 .hero-inner { position: relative; z-index: 1; }
+
+/* Body transparent-ish so the fixed particle field shows on every section */
+body.vfx-on { background: transparent; }
+body.vfx-on .section-alt {
+  background: rgba(249,250,251,.6);
+  -webkit-backdrop-filter: blur(2px);
+  backdrop-filter: blur(2px);
+}
+
+/* ---------- Glass navbar + footer ---------- */
+body.vfx-on .navbar {
+  background: rgba(255,255,255,.72);
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+  box-shadow: 0 1px 20px rgba(37,99,235,.06);
+}
+body.vfx-on .footer {
+  background: rgba(249,250,251,.7);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+}
 
 /* ---------- Animated gradient name ---------- */
 .hero-text h1 .accent {
@@ -939,8 +960,9 @@ small { font-size: .8rem; color: var(--text-muted); }
   border-radius: 50%;
   filter: blur(90px);
   opacity: .45;
-  z-index: -1;
+  z-index: -2;
   pointer-events: none;
+  translate: 0 var(--scroll-shift, 0px);   /* scroll parallax (set by vfx.js) */
 }
 .vfx-blob-1 {
   width: 480px; height: 480px;
@@ -1034,18 +1056,22 @@ body.vfx-on .skill-tag:hover {
 body.vfx-on .page-header {
   background:
     radial-gradient(ellipse 70% 100% at 80% 0%, rgba(37,99,235,.10), transparent 60%),
-    linear-gradient(180deg, #F8FAFF 0%, var(--bg-alt) 100%);
+    rgba(248,250,255,.65);
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
 }
 
-/* ---------- Scroll reveal ---------- */
+/* ---------- 3D scroll reveal — sections rotate up from depth ---------- */
 .reveal-item {
   opacity: 0;
-  transform: translateY(26px);
-  transition: opacity .7s cubic-bezier(.16,1,.3,1), transform .7s cubic-bezier(.16,1,.3,1);
+  transform: perspective(1000px) rotateX(9deg) translateY(44px) scale(.97);
+  transform-origin: center top;
+  transition: opacity .8s cubic-bezier(.16,1,.3,1), transform .8s cubic-bezier(.16,1,.3,1);
+  will-change: opacity, transform;
 }
 .reveal-item.revealed {
   opacity: 1;
-  transform: translateY(0);
+  transform: perspective(1000px) rotateX(0deg) translateY(0) scale(1);
 }
 
 /* ---------- Mobile adjustments ---------- */
