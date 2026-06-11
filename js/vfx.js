@@ -11,10 +11,11 @@
 
   document.addEventListener('DOMContentLoaded', () => {
     document.body.classList.add('vfx-on');
+    const rivr = document.body.classList.contains('rivr');
     if (!reducedMotion) initParticleField();
     if (!reducedMotion) initParallax();
     if (!reducedMotion && !noHover) initTilt();
-    if (!reducedMotion && !noHover) initSpotlight();
+    if (!reducedMotion && !noHover && !rivr) initSpotlight();
     initReveal();
   });
 

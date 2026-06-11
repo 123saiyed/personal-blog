@@ -29,51 +29,92 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
 </head>
-<body class="holo">
+<body class="rivr rivr-home">
 
-  <!-- NAVBAR -->
-  <nav class="navbar">
-    <div class="container nav-inner">
-      <a href="index.html" class="nav-logo">Ajamali Saiyad</a>
-      <ul class="nav-links">
-        <li><a href="index.html" class="active">Home</a></li>
-        <li><a href="certificates.html">Certificates</a></li>
-      </ul>
-      <button class="nav-toggle" aria-label="Toggle menu">&#9776;</button>
-    </div>
-  </nav>
+  <!-- RIVR HERO — full-screen rounded frame with video background -->
+  <div class="rivr-hero-wrap">
+    <section class="rivr-frame">
+      <video autoplay muted loop playsinline aria-hidden="true"
+        src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260428_193507_4286c423-2fd9-4efd-92bd-91a939453fc1.mp4"></video>
 
-  <!-- Full-page 3D particle background -->
-  <canvas id="vfx-canvas" aria-hidden="true"></canvas>
+      <div class="rivr-content">
 
-  <!-- Floating gradient blobs (decoration) -->
-  <div class="vfx-blob vfx-blob-1" aria-hidden="true"></div>
-  <div class="vfx-blob vfx-blob-2" aria-hidden="true"></div>
-  <div class="vfx-blob vfx-blob-3" aria-hidden="true"></div>
+        <!-- In-frame navbar -->
+        <nav class="rivr-nav">
+          <div class="rivr-nav-spacer"></div>
+          <ul class="rivr-nav-menu">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="#about">About
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg></a>
+            </li>
+            <li><a href="#skills-section">Skills</a></li>
+            <li><a href="certificates.html">Certificates
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg></a>
+            </li>
+          </ul>
+          <div class="rivr-nav-logo">Ajamali Saiyad</div>
+          <div class="rivr-nav-right">
+            <a href="#" id="resume-btn" class="rivr-pill" target="_blank" rel="noopener" style="display:none">
+              <span class="rivr-pill-ico">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7"/><path d="M7 7h10v10"/></svg>
+              </span>
+              <span>Download CV</span>
+            </a>
+          </div>
+        </nav>
 
-  <!-- HERO -->
-  <section class="hero">
-    <div class="holo-grid" aria-hidden="true"></div>
-    <div class="container hero-inner">
-      <div class="hero-text">
-        <span class="badge" id="hero-badge">Open to Opportunities</span>
-        <p class="hero-hi">Hi, I'm</p>
-        <h1 class="hero-name"><span class="accent">Ajamali Saiyad</span></h1>
-        <p class="hero-title" id="hero-title">Assistant Professor at LJ University</p>
-        <p class="hero-bio" id="hero-bio">Passionate educator and researcher with hands-on experience in academics and technology. I welcome opportunities to collaborate, teach, or consult. Feel free to explore and reach out!</p>
-        <div class="hero-actions">
-          <a href="#" id="resume-btn" class="btn-primary" target="_blank" rel="noopener" style="display:none">&#8595; Download CV</a>
-          <a href="certificates.html" class="btn-secondary">View Certificates</a>
+        <!-- Hero text -->
+        <div class="rivr-text">
+          <div class="rivr-badge">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/></svg>
+            <span id="hero-badge">Open to Opportunities</span>
+          </div>
+          <h1 class="rivr-h1">Ajamali Saiyad</h1>
+          <p class="rivr-sub" id="hero-title">Assistant Professor at LJ University</p>
+          <p class="rivr-bio" id="hero-bio">Passionate educator and researcher with hands-on experience in academics and technology. Explore my certifications, skills, and professional background.</p>
         </div>
-      </div>
-      <div class="hero-avatar">
-        <div class="avatar-placeholder" id="avatar-wrap">
-          <span id="avatar-initials">AS</span>
-          <img id="avatar-img" src="" alt="Ajamali Saiyad" style="display:none;width:100%;height:100%;object-fit:cover;border-radius:50%;" />
+
+        <!-- Bottom-left glass card -->
+        <div class="rivr-bl-card">
+          <div class="avatar-placeholder" id="avatar-wrap">
+            <span id="avatar-initials">AS</span>
+            <img id="avatar-img" src="" alt="Ajamali Saiyad" style="display:none;width:100%;height:100%;object-fit:cover;border-radius:50%;" />
+          </div>
+          <div>
+            <div class="rivr-bl-num">Educator</div>
+            <div class="rivr-bl-label">LJ University</div>
+          </div>
+          <a href="certificates.html" class="rivr-pill rivr-pill-white">
+            <span class="rivr-pill-ico">
+              <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7"/><path d="M7 7h10v10"/></svg>
+            </span>
+            <span>View Certificates</span>
+          </a>
         </div>
+
+        <!-- Bottom-right cutout corner -->
+        <div class="rivr-corner">
+          <div class="rivr-mask rivr-mask-top">
+            <svg width="100%" height="100%" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M56 56V0C56 30.9279 30.9279 56 0 56H56Z" fill="#f0f0f0"/></svg>
+          </div>
+          <div class="rivr-mask rivr-mask-left">
+            <svg width="100%" height="100%" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M56 56H0C30.9279 56 56 30.9279 56 0V56Z" fill="#f0f0f0"/></svg>
+          </div>
+          <div class="rivr-corner-circle">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7"/><path d="M7 7h10v10"/></svg>
+          </div>
+          <div>
+            <div class="rivr-corner-title">Certificates</div>
+            <a class="rivr-corner-link" href="certificates.html">
+              <span>View Library</span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+            </a>
+          </div>
+        </div>
+
       </div>
-    </div>
-  </section>
+    </section>
+  </div>
 
   <!-- ABOUT -->
   <section class="section section-alt" id="about">

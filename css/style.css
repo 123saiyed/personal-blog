@@ -1423,3 +1423,347 @@ body.holo #vfx-spotlight {
   body.holo .contact-card::before,
   body.holo .cert-card::before { animation: none; background: none; }
 }
+
+/* ============================================================
+   RIVR THEME — premium light glassmorphism with video hero
+   Scoped to body.rivr (public pages; admin untouched)
+   ============================================================ */
+body.rivr {
+  background: #f0f0f0;
+  color: var(--text);
+}
+body.rivr-home .navbar { display: none; }
+body.rivr .navbar {
+  background: rgba(240,240,240,.82);
+  border-bottom: 1px solid rgba(30,50,90,.08);
+}
+body.rivr .section-alt {
+  background: rgba(255,255,255,.55);
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
+}
+body.rivr .page-header {
+  background: rgba(255,255,255,.5);
+  border-bottom: 1px solid rgba(30,50,90,.08);
+}
+
+/* Buttons site-wide: navy pills to match hero */
+body.rivr .btn-primary {
+  background: rgba(30,50,90,.85);
+  border-radius: 999px;
+  box-shadow: 0 6px 20px rgba(30,50,90,.25);
+}
+body.rivr .btn-primary:hover { background: rgba(30,50,90,1); }
+body.rivr .btn-secondary {
+  color: rgba(30,50,90,.9);
+  border-color: rgba(30,50,90,.4);
+  border-radius: 999px;
+}
+body.rivr .btn-secondary:hover { background: rgba(30,50,90,.07); }
+body.rivr .skill-tag {
+  background: rgba(30,50,90,.07);
+  color: rgba(30,50,90,.85);
+  border-color: rgba(30,50,90,.15);
+}
+
+/* ---------- Hero wrapper (full screen, padded) ---------- */
+.rivr-hero-wrap {
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: #f0f0f0;
+}
+.rivr-frame {
+  position: relative;
+  width: 100%;
+  max-width: 1536px;
+  height: 100%;
+  border-radius: 3rem;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: linear-gradient(140deg, #dde8f7 0%, #c8dcf5 45%, #e6eefb 100%);
+}
+.rivr-frame video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 65% center;
+  z-index: 0;
+}
+.rivr-content {
+  position: relative;
+  z-index: 10;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* ---------- In-frame navbar ---------- */
+.rivr-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24px 40px;
+  width: 100%;
+}
+.rivr-nav-spacer { flex: 1; }
+.rivr-nav-menu {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  list-style: none;
+  font-size: 14px;
+}
+.rivr-nav-menu a {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: rgb(45,45,45);
+  text-decoration: none;
+  transition: opacity .2s;
+}
+.rivr-nav-menu a:hover { opacity: .7; text-decoration: none; }
+.rivr-nav-menu svg { width: 16px; height: 16px; transition: transform .2s; }
+.rivr-nav-menu a:hover svg { transform: translateX(2px); }
+.rivr-nav-logo {
+  display: none;
+  font-size: 19px;
+  letter-spacing: -0.02em;
+  font-weight: 600;
+  color: rgba(30,50,90,.9);
+}
+.rivr-nav-right { flex: 1; display: flex; justify-content: flex-end; }
+
+/* ---------- Navy pill ---------- */
+.rivr-pill {
+  display: inline-flex;
+  align-items: center;
+  background: rgba(30,50,90,.8);
+  color: #fff;
+  border: none;
+  border-radius: 999px;
+  padding: 8px 24px 8px 8px;
+  gap: 12px;
+  cursor: pointer;
+  font-size: 14px;
+  font-family: inherit;
+  text-decoration: none;
+  transition: background .2s, transform .15s;
+}
+.rivr-pill:hover { background: rgba(30,50,90,1); transform: scale(1.02); text-decoration: none; color: #fff; }
+.rivr-pill:active { transform: scale(.98); }
+.rivr-pill-ico {
+  background: rgba(255,255,255,.2);
+  padding: 6px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.rivr-pill-ico svg { width: 18px; height: 18px; stroke: #fff; }
+
+/* ---------- Hero text ---------- */
+.rivr-text {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 28px 24px 0;
+  text-align: center;
+  max-width: 896px;
+  position: relative;
+}
+.rivr-text::before {
+  content: '';
+  position: absolute;
+  inset: -40px -80px;
+  background: radial-gradient(ellipse 60% 70% at 50% 45%, rgba(255,255,255,.34), transparent 70%);
+  filter: blur(6px);
+  pointer-events: none;
+  z-index: -1;
+}
+.rivr-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.6);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255,255,255,.2);
+  margin: 0 auto 12px;
+  width: fit-content;
+  animation: rivr-fade-up .6s ease-out both;
+}
+.rivr-badge svg { width: 16px; height: 16px; stroke: rgba(30,50,90,.8); }
+.rivr-badge span { font-size: 14px; color: rgba(30,50,90,.9); }
+
+.rivr-h1 {
+  font-size: clamp(2.5rem, 6.5vw, 80px);
+  font-weight: 500;
+  color: rgba(20,35,70,.96);
+  text-shadow: 0 1px 2px rgba(255,255,255,.5), 0 4px 30px rgba(255,255,255,.55);
+  margin-bottom: 8px;
+  letter-spacing: -0.02em;
+  line-height: 1.05;
+  animation: rivr-scale-in .8s ease-out .2s both;
+}
+.rivr-sub {
+  font-size: 18px;
+  font-weight: 500;
+  color: rgba(25,42,80,.92);
+  text-shadow: 0 1px 12px rgba(255,255,255,.6);
+  margin-bottom: 10px;
+  animation: rivr-fade-in .8s ease-out .3s both;
+}
+.rivr-bio {
+  font-size: 16px;
+  color: rgba(25,42,80,.85);
+  text-shadow: 0 1px 10px rgba(255,255,255,.55);
+  line-height: 1.6;
+  max-width: 36rem;
+  animation: rivr-fade-in .8s ease-out .4s both;
+}
+
+/* ---------- Bottom-left glass card ---------- */
+.rivr-bl-card {
+  position: absolute;
+  bottom: 40px;
+  left: 40px;
+  padding: 20px;
+  border-radius: 2.2rem;
+  background: rgba(255,255,255,.3);
+  -webkit-backdrop-filter: blur(24px);
+  backdrop-filter: blur(24px);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 180px;
+  width: fit-content;
+  animation: rivr-slide-right .8s ease-out .2s both;
+}
+.rivr-bl-card .avatar-placeholder {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: rgba(30,50,90,.85);
+  border: none;
+  box-shadow: none;
+  animation: none;
+  color: #fff;
+  font-size: 20px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.rivr-bl-num {
+  font-size: 26px;
+  color: rgba(30,50,90,.9);
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+.rivr-bl-label {
+  font-size: 12px;
+  color: rgba(30,50,90,.6);
+  text-transform: uppercase;
+  letter-spacing: .08em;
+}
+.rivr-pill-white {
+  background: #fff;
+  color: rgba(30,50,90,.9);
+  padding: 6px 20px 6px 6px;
+  gap: 8px;
+  align-self: flex-start;
+}
+.rivr-pill-white:hover { background: rgba(255,255,255,.92); color: rgba(30,50,90,1); }
+.rivr-pill-white .rivr-pill-ico { background: rgba(30,50,90,.1); padding: 4px; }
+.rivr-pill-white .rivr-pill-ico svg { width: 16px; height: 16px; stroke: rgba(30,50,90,.9); }
+
+/* ---------- Bottom-right cutout corner ---------- */
+.rivr-corner {
+  position: absolute;
+  bottom: 0; right: 0;
+  padding: 24px 24px 24px 56px;
+  padding-top: 32px;
+  background: #f0f0f0;
+  border-top-left-radius: 3.5rem;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  animation: rivr-rise .8s ease-out .4s both;
+}
+.rivr-mask { position: absolute; pointer-events: none; }
+.rivr-mask-top  { top: -3.5rem; right: 0; width: 3.5rem; height: 3.5rem; }
+.rivr-mask-left { bottom: 0; left: -3.5rem; width: 3.5rem; height: 3.5rem; }
+.rivr-corner-circle {
+  background: rgba(30,50,90,.05);
+  width: 56px; height: 56px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(30,50,90,.1);
+  flex-shrink: 0;
+}
+.rivr-corner-circle svg { width: 22px; height: 22px; stroke: rgba(30,50,90,.8); }
+.rivr-corner-title { font-size: 20px; color: rgba(30,50,90,.95); }
+.rivr-corner-link {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: rgba(30,50,90,.6);
+  cursor: pointer;
+  transition: color .2s;
+  text-decoration: none;
+}
+.rivr-corner-link:hover { color: rgba(30,50,90,.8); text-decoration: none; }
+.rivr-corner-link span { font-size: 15px; }
+.rivr-corner-link svg { width: 16px; height: 16px; }
+
+/* ---------- Entrance animations ---------- */
+@keyframes rivr-fade-up    { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: none; } }
+@keyframes rivr-fade-in    { from { opacity: 0; } to { opacity: 1; } }
+@keyframes rivr-scale-in   { from { opacity: 0; transform: scale(.98); } to { opacity: 1; transform: scale(1); } }
+@keyframes rivr-slide-right{ from { opacity: 0; transform: translateX(-20px); } to { opacity: 1; transform: none; } }
+@keyframes rivr-rise       { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: none; } }
+
+/* ---------- RIVR mobile ---------- */
+@media (max-width: 768px) {
+  .rivr-hero-wrap { padding: 12px; height: 100svh; }
+  .rivr-frame { border-radius: 1.5rem; }
+  .rivr-nav { padding: 18px 20px; }
+  .rivr-nav-menu, .rivr-nav-spacer { display: none; }
+  .rivr-nav-logo { display: block; }
+  .rivr-bl-card {
+    bottom: 110px; right: 16px; left: auto;
+    border-radius: 1.2rem; padding: 14px; min-width: 140px;
+  }
+  .rivr-bl-card .avatar-placeholder { width: 44px; height: 44px; font-size: 16px; }
+  .rivr-bl-num { font-size: 20px; }
+  .rivr-corner {
+    padding: 14px 12px 12px 32px; padding-top: 20px;
+    border-top-left-radius: 1.5rem; gap: 12px;
+  }
+  .rivr-mask-top  { top: -1.5rem; width: 1.5rem; height: 1.5rem; }
+  .rivr-mask-left { left: -1.5rem; width: 1.5rem; height: 1.5rem; }
+  .rivr-corner-circle { width: 40px; height: 40px; }
+  .rivr-corner-circle svg { width: 16px; height: 16px; }
+  .rivr-corner-title { font-size: 16px; }
+  .rivr-corner-link span { font-size: 12px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rivr-badge, .rivr-h1, .rivr-sub, .rivr-bio,
+  .rivr-bl-card, .rivr-corner { animation: none; }
+}
